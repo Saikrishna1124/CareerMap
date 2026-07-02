@@ -1,0 +1,148 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary: #4F378B;
+  --color-secondary: #D97706;
+  --color-accent: #4F378B;
+
+  /* CareerMap Light Theme — Dynamic with Warm Slate fallback */
+  --color-warm-bg: var(--bg-base, #F6F2EC);
+  --color-warm-sidebar: var(--bg-sidebar, #EDEAE3);
+  --color-warm-card: var(--bg-card, #FFFFFF);
+  --color-warm-border: var(--border-subtle, #DDD5C8);
+  --color-warm-text: var(--text-primary, #1C1917);
+  --color-warm-secondary: var(--text-secondary, #78716C);
+  --color-warm-muted: var(--text-muted, #78716C);
+  --color-warm-hint: var(--text-muted, #A8A29E);
+
+  --color-brand-purple: var(--accent-primary, #4F378B);
+  --color-brand-amber: var(--accent-amber, #D97706);
+
+  --color-badge-purple: var(--accent-soft-surface, #EDE9FE);
+  --color-badge-amber: var(--accent-amber-soft, #FEF3C7);
+}
+
+@layer base {
+  body {
+    @apply antialiased bg-warm-bg dark:bg-stone-950 text-warm-text dark:text-stone-100;
+    background-image: radial-gradient(var(--border-subtle, #DDD5C8) 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+  }
+
+  .dark body {
+    background-image: radial-gradient(var(--border-subtle, #292524) 0.5px, transparent 0.5px);
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border border-warm-border/50 dark:border-stone-800/50 shadow-lg;
+  }
+
+  .atmosphere {
+    background:
+      radial-gradient(circle at 50% 30%, rgba(79, 55, 139, 0.08) 0%, transparent 60%),
+      radial-gradient(circle at 10% 80%, rgba(217, 119, 6, 0.05) 0%, transparent 50%);
+    filter: blur(60px);
+    opacity: 0.8;
+  }
+
+  .card-3d {
+    @apply bg-white dark:bg-stone-900 rounded-3xl border border-warm-border dark:border-stone-800 shadow-xl shadow-warm-border/20 dark:shadow-none transition-transform hover:-translate-y-1;
+  }
+
+  .btn-3d {
+    @apply relative transition-all active:translate-y-1 active:border-b-0 border-b-4 rounded-xl font-bold;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
+}
+
+/* High Contrast Mode CSS Overrides */
+.high-contrast {
+  --color-warm-bg: #FFFFFF !important;
+  --color-warm-sidebar: #FFFFFF !important;
+  --color-warm-card: #FFFFFF !important;
+  --color-warm-text: #000500 !important;
+  --color-warm-border: #000500 !important;
+}
+
+.high-contrast.dark {
+  --color-warm-bg: #000500 !important;
+  --color-warm-sidebar: #000500 !important;
+  --color-warm-card: #000500 !important;
+  --color-warm-text: #FFFFFF !important;
+  --color-warm-border: #FFFFFF !important;
+}
+
+.high-contrast * {
+  border-color: #000500 !important;
+  text-shadow: none !important;
+  font-weight: 605 !important;
+}
+
+.high-contrast.dark * {
+  border-color: #FFFFFF !important;
+  text-shadow: none !important;
+  font-weight: 605 !important;
+}
+
+.high-contrast button,
+.high-contrast input,
+.high-contrast select,
+.high-contrast textarea {
+  border: 2px solid #000500 !important;
+  font-weight: 705 !important;
+}
+
+.high-contrast.dark button,
+.high-contrast.dark input,
+.high-contrast.dark select,
+.high-contrast.dark textarea {
+  border: 2px solid #FFFFFF !important;
+  font-weight: 705 !important;
+}
+
+/* Dynamic Dark Theme Mapping overrides */
+.dark {
+  --color-stone-950: var(--bg-base) !important;
+  --color-stone-900: var(--bg-sidebar) !important;
+  --color-stone-800: var(--border-subtle) !important;
+  --color-stone-700: var(--border-default) !important;
+  --color-stone-105: var(--text-primary) !important;
+  --color-stone-100: var(--text-primary) !important;
+  --color-stone-200: var(--text-primary) !important;
+  --color-stone-300: var(--text-secondary) !important;
+  --color-stone-400: var(--text-muted) !important;
+  --color-stone-500: var(--text-muted) !important;
+
+  --color-brand-purple: var(--accent-primary) !important;
+  --color-badge-purple: var(--accent-soft-surface) !important;
+}
+
+/* Enable super-smooth transition updates */
+body,
+nav,
+aside,
+header,
+main,
+button {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, stroke 0.25s ease, fill 0.25s ease, box-shadow 0.25s ease !important;
+}

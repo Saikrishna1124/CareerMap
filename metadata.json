@@ -1,0 +1,11 @@
+{
+  "name": "CareerMap",
+  "description": "AI-powered career intelligence platform for resume analysis, interview prep, and real-time job matching.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
