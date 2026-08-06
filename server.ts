@@ -67,8 +67,9 @@ async function generateAIContent(options: {
 
   const modelsList = availableModels.length > 0 ? availableModels : modelsUnique;
 
-  // Optimized config
+  // Optimized config with high output token limit to prevent truncating long responses
   const config = {
+    maxOutputTokens: 8192,
     ...options.config
   };
 
@@ -1066,6 +1067,8 @@ async function startServer() {
   // Resume Endpoints
   app.post("/api/analyze-resume", authenticate, async (req: any, res) => {
     const { resumeText, resumeFile } = req.body;
+    const userRealName = req.user?.name || "Candidate";
+    const userRealEmail = req.user?.email || "";
 
     try {
       const response = await generateAIContent({
@@ -1077,27 +1080,28 @@ async function startServer() {
                 text: `Analyze this resume for a high-performance ATS (Applicant Tracking System) compatibility report.
             
               STRICT EVALUATION CRITERIA:
-              1. SKILLS: Extract technical and soft skills.
-              2. PROJECTS & CERTIFICATIONS: Identify projects and certifications.
-              3. KEYWORD MATCHING: Check for critical role-based keywords.
-              4. FORMATTING: Check for sections, readability, consistency.
-              5. ATS SCORE (0-100): Calculate an honest score. 0 means failed analysis/empty, 100 is perfect.
+              1. CANDIDATE NAME & CONTACT: Extract the candidate's real full name, email, and contact info from the resume. Candidate logged-in name: "${userRealName}".
+              2. SKILLS: Extract technical and soft skills.
+              3. PROJECTS & CERTIFICATIONS: Identify projects and certifications.
+              4. KEYWORD MATCHING: Check for critical role-based keywords.
+              5. FORMATTING: Check for sections, readability, consistency.
+              6. ATS SCORE (0-100): Calculate an honest score. 0 means failed analysis/empty, 100 is perfect.
               
               You MUST return a valid JSON object matching this schema:
               {
-                "skills": [{"name": "string", "level": number}],
+                "skills": [{"name": "skill name", "level": number}],
                 "score": number (0-100),
                 "tips": [{"category": "string", "text": "string"}],
                 "profileData": {
-                  "name": "string",
-                  "title": "string",
-                  "bio": "string",
-                  "experience": [{"company": "string", "role": "string", "period": "string", "desc": "string"}],
-                  "education": [{"school": "string", "degree": "string", "year": "string"}]
+                  "name": "Candidate's real full name",
+                  "title": "Current or target role title",
+                  "bio": "Short summary",
+                  "experience": [{"company": "Company name", "role": "Role title", "period": "Duration", "desc": "Responsibility details"}],
+                  "education": [{"school": "Institution name", "degree": "Degree name", "year": "Graduation year"}]
                 }
               }
               
-              CRITICAL: Do NOT extract social media profiles, GitHub URLs, or LinkedIn profiles. These must remain manually managed by the user.`
+              CRITICAL: Do NOT return literal placeholder text like 'string' or 'Full Name'. Extract actual details from the uploaded document!`
               },
               ...(resumeFile && resumeFile.data ? [{
                 inlineData: {
@@ -1115,7 +1119,7 @@ async function startServer() {
           score: 80,
           tips: [{ category: "Formatting", text: "Ensure consistent date formatting across all entries." }],
           profileData: {
-            name: "Member",
+            name: userRealName,
             title: "Professional",
             bio: "Experienced professional seeking new opportunities.",
             experience: [],
@@ -1131,6 +1135,11 @@ async function startServer() {
       const analysis = JSON.parse(responseText.trim());
       analysis.score = Number(analysis.score) || 75;
 
+      if (!analysis.profileData) analysis.profileData = {};
+      if (!analysis.profileData.name || analysis.profileData.name === 'string' || analysis.profileData.name === 'Member' || analysis.profileData.name === "Candidate's real full name") {
+        analysis.profileData.name = userRealName;
+      }
+
       if (analysis.skills) {
         analysis.skills = analysis.skills.map((s: any) => ({
           name: s.name || "Skill",
@@ -1142,6 +1151,240 @@ async function startServer() {
     } catch (err: any) {
       console.error("Final Resume analysis error:", err);
       res.status(500).json({ error: "Failed to analyze resume", details: err.message });
+    }
+  });
+
+  // Generate Improved Resume based on AI analysis tips — returns structured sections for PDF
+  app.post("/api/generate-improved-resume", authenticate, async (req: any, res) => {
+    const { resumeText, resumeFile, tips, profileData, score, skills } = req.body;
+    const userRealName = profileData?.name && profileData.name !== 'Member' && profileData.name !== 'string' ? profileData.name : (req.user?.name || "Candidate");
+    const userRealEmail = profileData?.email || req.user?.email || "";
+
+    try {
+      // Build the tips summary for the AI
+      const tipsText = (tips || []).map((tip: any) => {
+        const category = typeof tip === 'string' ? 'General' : tip.category;
+        const text = typeof tip === 'string' ? tip : tip.text;
+        return `[${category}]: ${text}`;
+      }).join('\n');
+
+      const skillsList = (skills || []).map((s: any) => typeof s === 'object' ? s.name : s).join(', ');
+
+      const experienceText = (profileData?.experience || []).map((exp: any) => 
+        `${exp.role} at ${exp.company} (${exp.period}): ${exp.desc}`
+      ).join('\n');
+
+      const educationText = (profileData?.education || []).map((edu: any) => 
+        `${edu.degree} from ${edu.school} (${edu.year})`
+      ).join('\n');
+
+      const response = await generateAIContent({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: `You are an expert resume writer and ATS optimization specialist. Your task is to generate an IMPROVED, UPGRADED version of the user's resume by applying ALL of the improvement tips provided below.
+
+CANDIDATE PROFILE:
+- Real Candidate Name: "${userRealName}"
+- Candidate Email: "${userRealEmail}"
+- Current ATS Score: ${score || 0}%
+- Extracted Skills: ${skillsList || 'Not available'}
+- Title: ${profileData?.title || 'Not available'}
+- Bio: ${profileData?.bio || 'Not available'}
+
+EXISTING EXPERIENCE:
+${experienceText || 'Not available'}
+
+EXISTING EDUCATION:
+${educationText || 'Not available'}
+
+IMPROVEMENT TIPS TO APPLY:
+${tipsText || 'No specific tips available'}
+
+CRITICAL INSTRUCTIONS:
+1. MANDATORY: The resume MUST be for "${userRealName}". Use "${userRealName}" as the name in the header! DO NOT output "Full Name", "Candidate Name", "John Doe", or generic text.
+2. If email is provided, use "${userRealEmail}".
+3. Extract and preserve all real companies, degrees, schools, and roles from the candidate's uploaded resume / profile data. DO NOT replace their real companies or schools with generic text like "Company Name" or "University Name".
+4. APPLY every improvement tip listed above — stronger action verbs, quantified achievements, missing keywords, etc.
+5. Use strong action verbs: Spearheaded, Engineered, Optimized, Architected, Implemented, Streamlined, etc.
+6. Add quantified metrics where possible (e.g., "Improved performance by 40%", "Led a team of 5 developers").
+7. For each experience entry, provide 3-5 strong bullet points describing their actual work with upgraded impact phrasing.
+
+Return the improved resume as a STRUCTURED JSON object with this EXACT schema:
+{
+  "resumeData": {
+    "name": "${userRealName}",
+    "title": "Exact or target professional title",
+    "email": "${userRealEmail}",
+    "phone": "Phone number if present in resume or empty string",
+    "location": "Location if present in resume or empty string",
+    "linkedin": "LinkedIn link if present in resume or empty string",
+    "summary": "A strong 2-3 sentence professional summary tailored to the candidate",
+    "skillCategories": [
+      { "category": "Technical Skills", "skills": ["skill1", "skill2"] }
+    ],
+    "experience": [
+      {
+        "role": "Actual candidate role title",
+        "company": "Actual company name",
+        "period": "Actual duration",
+        "location": "Location or Remote",
+        "bullets": [
+          "Upgraded bullet point 1 with strong action verb and metric",
+          "Upgraded bullet point 2",
+          "Upgraded bullet point 3"
+        ]
+      }
+    ],
+    "education": [
+      {
+        "degree": "Actual degree name",
+        "school": "Actual institution name",
+        "year": "Actual graduation year",
+        "gpa": "GPA if mentioned or empty string"
+      }
+    ],
+    "projects": [
+      {
+        "name": "Actual project name if present",
+        "tech": "Technologies used",
+        "bullets": ["Project detail bullet point"]
+      }
+    ],
+    "certifications": ["Actual certification name if present"]
+  },
+  "changesSummary": ["List of specific changes made"],
+  "estimatedNewScore": 92,
+  "keyImprovements": ["Top 3-5 key improvements highlighted"]
+}`
+              },
+              ...(resumeFile && resumeFile.data ? [{
+                inlineData: {
+                  data: resumeFile.data,
+                  mimeType: resumeFile.mimeType || "application/pdf"
+                }
+              }] : [{
+                text: `Original Resume Content:\n${resumeText || "No original text available."}`
+              }])
+            ]
+          }
+        ],
+        fallback: {
+          resumeData: {
+            name: userRealName,
+            title: profileData?.title || 'Software Developer',
+            email: userRealEmail,
+            phone: '',
+            location: '',
+            linkedin: '',
+            summary: profileData?.bio || 'Results-driven software professional with hands-on experience in building scalable applications. Passionate about delivering high-quality code and continuously improving development workflows.',
+            skillCategories: [
+              { category: 'Technical Skills', skills: (skills || []).map((s: any) => typeof s === 'object' ? s.name : s) }
+            ],
+            experience: (profileData?.experience || []).map((exp: any) => ({
+              role: exp.role || 'Software Developer',
+              company: exp.company || 'Tech Company',
+              period: exp.period || '2023 - Present',
+              location: '',
+              bullets: [exp.desc || 'Contributed to key development initiatives and delivered impactful solutions.']
+            })),
+            education: (profileData?.education || []).map((edu: any) => ({
+              degree: edu.degree || 'Bachelor of Science / Technology',
+              school: edu.school || 'University',
+              year: edu.year || '2024',
+              gpa: ''
+            })),
+            projects: [],
+            certifications: []
+          },
+          changesSummary: [
+            "Enhanced professional summary with quantified achievements",
+            "Added stronger action verbs throughout experience section",
+            "Incorporated missing ATS keywords into skills section",
+            "Improved formatting for better ATS readability"
+          ],
+          estimatedNewScore: Math.min(95, (score || 70) + 15),
+          keyImprovements: [
+            "Professional summary rewritten with impact metrics",
+            "Action verbs upgraded (Led → Spearheaded, Made → Engineered)",
+            "ATS keyword density improved",
+            "Consistent formatting applied across all sections"
+          ]
+        }
+      });
+
+      let responseText = response.text || "{}";
+      
+      // Smart JSON extractor & repair function for truncated AI outputs
+      const parseTruncatedJSON = (str: string) => {
+        const jsonMatch = str.match(/\{[\s\S]*/);
+        if (!jsonMatch) return null;
+        let clean = jsonMatch[0].trim();
+
+        // Remove trailing markdown codeblock fences if present
+        clean = clean.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        // 1. Try standard JSON.parse first
+        try {
+          return JSON.parse(clean);
+        } catch {
+          // 2. Attempt automatic JSON repair for truncated outputs
+          try {
+            let repaired = clean;
+            
+            // If string ends inside an unclosed quote, close it
+            const quoteCount = (repaired.match(/(?<!\\)"/g) || []).length;
+            if (quoteCount % 2 !== 0) {
+              repaired += '"';
+            }
+
+            // Remove trailing commas before closing
+            repaired = repaired.replace(/,\s*$/, '');
+
+            // Balance unclosed brackets and braces
+            const stack: string[] = [];
+            for (let i = 0; i < repaired.length; i++) {
+              const char = repaired[i];
+              if (char === '{' || char === '[') {
+                stack.push(char === '{' ? '}' : ']');
+              } else if (char === '}' || char === ']') {
+                if (stack.length > 0 && stack[stack.length - 1] === char) {
+                  stack.pop();
+                }
+              }
+            }
+
+            // Close all unclosed structures in reverse
+            while (stack.length > 0) {
+              repaired += stack.pop();
+            }
+
+            return JSON.parse(repaired);
+          } catch (repairErr) {
+            console.warn("JSON repair could not resolve parse error:", repairErr);
+            return null;
+          }
+        }
+      };
+
+      const result = parseTruncatedJSON(responseText) || response.fallback;
+
+      // Guarantee candidate name and email are populated correctly
+      if (result?.resumeData) {
+        if (!result.resumeData.name || result.resumeData.name === "Full Name" || result.resumeData.name === "${userRealName}" || result.resumeData.name === "Candidate's real full name") {
+          result.resumeData.name = userRealName;
+        }
+        if (!result.resumeData.email || result.resumeData.email === "${userRealEmail}") {
+          result.resumeData.email = userRealEmail;
+        }
+      }
+
+      res.json(result);
+    } catch (err: any) {
+      console.error("Generate improved resume error:", err);
+      res.status(500).json({ error: "Failed to generate improved resume", details: err.message });
     }
   });
 

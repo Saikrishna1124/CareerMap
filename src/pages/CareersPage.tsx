@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Briefcase, Search, Filter, MapPin, 
@@ -6,7 +6,8 @@ import {
   ArrowUpRight, Loader2, GraduationCap,
   X, CheckCircle2, Target, Compass, 
   Lightbulb, BookOpen, UserCheck,
-  ChevronRight, BrainCircuit, Bookmark
+  ChevronRight, BrainCircuit, Bookmark,
+  CalendarPlus, CalendarCheck, AlertCircle, Bell
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Tooltip } from '../components/Tooltip';
@@ -46,6 +47,99 @@ export const CareersPage: React.FC = () => {
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
   const [minMatchScore, setMinMatchScore] = useState(0);
   const [locationFilter, setLocationFilter] = useState('');
+
+  // Toast notification state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'alert'>('success');
+
+  // Track which opportunities have been synced to calendar
+  const [trackedIds, setTrackedIds] = useState<Set<string>>(new Set());
+
+  const showToast = (msg: string, type: 'success' | 'alert' = 'success') => {
+    setToastMessage(msg);
+    setToastType(type);
+    setTimeout(() => setToastMessage(null), 4500);
+  };
+
+  // Load tracked IDs from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('interview_events');
+      if (saved) {
+        const events = JSON.parse(saved);
+        const ids = new Set<string>(events.filter((e: any) => e.sourceOpportunityId).map((e: any) => e.sourceOpportunityId));
+        setTrackedIds(ids);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  // Auto-add opportunity to calendar
+  const addToCalendar = useCallback((opportunity: Opportunity) => {
+    try {
+      // Check if already tracked
+      if (trackedIds.has(opportunity.id)) {
+        showToast(`"${opportunity.title}" at ${opportunity.company} is already in your calendar!`, 'alert');
+        return;
+      }
+
+      // Read existing calendar events
+      const saved = localStorage.getItem('interview_events');
+      const existingEvents = saved ? JSON.parse(saved) : [];
+
+      // Schedule follow-up 7 days from now
+      const followUpDate = new Date();
+      followUpDate.setDate(followUpDate.getDate() + 7);
+      const dateStr = followUpDate.toISOString().split('T')[0];
+
+      // Determine interview type based on opportunity type
+      const interviewType = opportunity.type === 'Internship' ? 'Technical' 
+        : opportunity.type === 'Contract' ? 'Coding' 
+        : 'Technical';
+
+      // Build auto-generated notes
+      const autoNotes = [
+        `Auto-synced from Career Readiness page.`,
+        `Match Score: ${opportunity.matchScore}%`,
+        opportunity.skills?.length ? `Key Skills: ${opportunity.skills.join(', ')}` : '',
+        opportunity.missingSkills?.length ? `Skills to Develop: ${opportunity.missingSkills.join(', ')}` : '',
+        opportunity.description ? `Description: ${opportunity.description.substring(0, 150)}...` : ''
+      ].filter(Boolean).join('\n');
+
+      const newEvent = {
+        id: `auto-sync-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        role: opportunity.title,
+        company: opportunity.company,
+        date: dateStr,
+        time: '10:00',
+        type: interviewType as 'Technical' | 'Behavioral' | 'Coding' | 'HR' | 'System Design',
+        location: opportunity.location || 'Virtual / Online',
+        notes: autoNotes,
+        reminderSent: false,
+        sourceOpportunityId: opportunity.id // Track which opportunity this came from
+      };
+
+      const updatedEvents = [...existingEvents, newEvent];
+      localStorage.setItem('interview_events', JSON.stringify(updatedEvents));
+
+      // Update tracked IDs
+      setTrackedIds(prev => new Set(prev).add(opportunity.id));
+
+      showToast(`✅ "${opportunity.title}" at ${opportunity.company} auto-synced to your Interview Calendar!`);
+    } catch (err) {
+      console.error('Failed to sync to calendar:', err);
+      showToast('Failed to sync to calendar. Please try again.', 'alert');
+    }
+  }, [trackedIds]);
+
+  // Combined: Apply (open URL) + Auto-sync to Calendar
+  const handleApplyAndTrack = useCallback((opportunity: Opportunity) => {
+    // Open the application URL in a new tab
+    if (opportunity.url) {
+      window.open(opportunity.url, '_blank', 'noopener,noreferrer');
+    }
+    // Auto-add to calendar
+    addToCalendar(opportunity);
+  }, [addToCalendar]);
 
   const fetchOpportunities = async (queryOverride?: string) => {
     setIsLoading(true);
@@ -111,6 +205,27 @@ export const CareersPage: React.FC = () => {
 
   return (
     <div className="p-8 space-y-8 min-h-screen bg-warm-bg dark:bg-stone-950">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border max-w-md ${
+              toastType === 'success'
+                ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-900/50'
+                : 'bg-rose-50 dark:bg-rose-950 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-900/50'
+            }`}
+          >
+            {toastType === 'success' 
+              ? <CheckCircle2 className="text-emerald-500 shrink-0" size={18} /> 
+              : <AlertCircle className="text-rose-500 shrink-0" size={18} />}
+            <span className="text-xs font-semibold leading-relaxed tracking-tight">{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Section: Career Readiness Dashboard */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
@@ -355,8 +470,21 @@ export const CareersPage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
                 onClick={() => setSelectedOpportunity(item)}
-                className="group relative bg-white dark:bg-stone-900 rounded-[40px] border border-warm-border dark:border-stone-800 p-8 shadow-sm hover:shadow-2xl hover:-translate-y-2 hover:border-brand-purple transition-all cursor-pointer flex flex-col h-full overflow-hidden"
+                className={`group relative bg-white dark:bg-stone-900 rounded-[40px] border p-8 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer flex flex-col h-full overflow-hidden ${
+                  trackedIds.has(item.id) 
+                    ? 'border-emerald-300 dark:border-emerald-700 hover:border-emerald-400' 
+                    : 'border-warm-border dark:border-stone-800 hover:border-brand-purple'
+                }`}
               >
+                {/* Tracked Badge */}
+                {trackedIds.has(item.id) && (
+                  <div className="absolute top-6 left-6 z-10">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-full">
+                      <CalendarCheck size={12} className="text-emerald-600" />
+                      <span className="text-[8px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Synced to Calendar</span>
+                    </div>
+                  </div>
+                )}
                 {/* Readiness Badge */}
                 <div className="absolute top-0 right-0 p-8 pt-10">
                   <div className="flex flex-col items-end">
@@ -437,9 +565,16 @@ export const CareersPage: React.FC = () => {
                   <button className="flex-1 py-4 bg-brand-purple text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-warm-text transition-all flex items-center justify-center gap-2 shadow-xl shadow-brand-purple/20">
                     View Readiness <Compass size={14} />
                   </button>
-                  <Tooltip content="Bookmark Career" position="top">
-                    <button className="p-4 bg-white dark:bg-stone-950 border border-warm-border dark:border-stone-800 rounded-2xl text-warm-hint hover:text-brand-purple transition-all">
-                      <Bookmark size={20} />
+                  <Tooltip content={trackedIds.has(item.id) ? 'Already Synced ✓' : 'Apply & Sync to Calendar'} position="top">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleApplyAndTrack(item); }}
+                      className={`p-4 border rounded-2xl transition-all ${
+                        trackedIds.has(item.id)
+                          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-600'
+                          : 'bg-white dark:bg-stone-950 border-warm-border dark:border-stone-800 text-warm-hint hover:text-brand-purple hover:border-brand-purple'
+                      }`}
+                    >
+                      {trackedIds.has(item.id) ? <CalendarCheck size={20} /> : <CalendarPlus size={20} />}
                     </button>
                   </Tooltip>
                 </div>
@@ -583,19 +718,62 @@ export const CareersPage: React.FC = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-4 pt-10 border-t border-warm-border dark:border-stone-800">
-                  <a 
-                    href={selectedOpportunity.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-3 py-5 bg-brand-purple text-white rounded-[24px] text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-warm-text transition-all shadow-2xl shadow-brand-purple/20"
+                <div className="flex flex-col gap-4 pt-10 border-t border-warm-border dark:border-stone-800">
+                  {/* Primary: Apply & Auto-Sync to Calendar */}
+                  <button
+                    onClick={() => handleApplyAndTrack(selectedOpportunity)}
+                    disabled={trackedIds.has(selectedOpportunity.id)}
+                    className={`w-full py-5 rounded-[24px] text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all shadow-2xl ${
+                      trackedIds.has(selectedOpportunity.id)
+                        ? 'bg-emerald-600 text-white shadow-emerald-600/20 cursor-default'
+                        : 'bg-brand-purple text-white shadow-brand-purple/20 hover:bg-warm-text'
+                    }`}
                   >
-                    Launch Application <ArrowUpRight size={18} />
-                  </a>
-                  <button className="flex-1 py-5 bg-white dark:bg-stone-900 border border-warm-border dark:border-stone-800 rounded-[24px] text-[10px] font-black uppercase tracking-widest text-warm-hint hover:text-brand-purple transition-all">
-                    Save Role
+                    {trackedIds.has(selectedOpportunity.id) ? (
+                      <><CalendarCheck size={18} /> Applied & Synced to Calendar</>
+                    ) : (
+                      <><CalendarPlus size={18} /> Apply & Sync to Calendar</>
+                    )}
                   </button>
+
+                  <div className="flex gap-4">
+                    {/* Secondary: Just open the application link */}
+                    <a 
+                      href={selectedOpportunity.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 py-4 bg-white dark:bg-stone-900 border border-warm-border dark:border-stone-800 rounded-[24px] text-[10px] font-black uppercase tracking-widest text-warm-secondary hover:text-brand-purple hover:border-brand-purple transition-all flex items-center justify-center gap-2"
+                    >
+                      Open Job Link <ArrowUpRight size={14} />
+                    </a>
+                    <button 
+                      onClick={() => !trackedIds.has(selectedOpportunity.id) && addToCalendar(selectedOpportunity)}
+                      className={`flex-1 py-4 border rounded-[24px] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                        trackedIds.has(selectedOpportunity.id)
+                          ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800 text-emerald-600 cursor-default'
+                          : 'bg-white dark:bg-stone-900 border-warm-border dark:border-stone-800 text-warm-hint hover:text-brand-purple hover:border-brand-purple'
+                      }`}
+                    >
+                      {trackedIds.has(selectedOpportunity.id) 
+                        ? <><CalendarCheck size={14} /> In Calendar</> 
+                        : <><CalendarPlus size={14} /> Only Add to Calendar</>
+                      }
+                    </button>
+                  </div>
                 </div>
+
+                {/* Auto-Sync Info Banner */}
+                {!trackedIds.has(selectedOpportunity.id) && (
+                  <div className="p-4 bg-brand-purple/5 border border-brand-purple/10 rounded-2xl flex items-start gap-3">
+                    <Bell size={16} className="text-brand-purple shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-brand-purple tracking-widest">Auto Calendar Sync</p>
+                      <p className="text-xs font-medium text-warm-secondary mt-1">
+                        Clicking "Apply & Sync" will open the application and automatically schedule a follow-up interview preparation event in your Calendar — no manual entry needed.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="p-6 bg-warm-bg dark:bg-stone-900 rounded-[32px] border border-warm-border dark:border-stone-800 border-dashed text-center">
                    <p className="text-[9px] font-black uppercase italic text-warm-hint">Career Coach Insight</p>
