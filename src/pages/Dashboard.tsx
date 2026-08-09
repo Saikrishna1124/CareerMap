@@ -11,9 +11,10 @@ import {
   Award, BookOpen, ChevronRight, Sparkles,
   Video, FileText, Code, Brain, Map, Loader2,
   Briefcase, MapPin, Github, Linkedin, Globe,
-  Bell, BellRing, Trash, Check
+  Bell, BellRing, Trash, Check, Flame
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { loadUserGameState } from '../utils/dailyGameUtils';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -634,6 +635,31 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="space-y-8">
+          {/* Daily Mind Gym Arcade Card */}
+          <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 rounded-[32px] p-6 text-white shadow-xl shadow-orange-500/20 relative overflow-hidden group">
+            <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+            <div className="flex items-center justify-between mb-3 relative z-10">
+              <span className="text-[10px] font-black uppercase tracking-widest bg-black/20 text-amber-100 px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5 text-amber-300 animate-pulse" /> 1 Play Per Day
+              </span>
+              <span className="text-xs font-black bg-white text-orange-600 px-2.5 py-0.5 rounded-full font-mono">
+                {loadUserGameState(user?.email || user?.id).currentStreak}🔥 Streak
+              </span>
+            </div>
+            <h3 className="text-xl font-black mb-1 relative z-10 text-white italic tracking-tight uppercase">
+              Career Connections
+            </h3>
+            <p className="text-xs text-amber-100 mb-5 relative z-10 font-medium leading-relaxed">
+              Group 4 related tech & career concepts. Sharpen your skills and keep your streak alive!
+            </p>
+            <button
+              onClick={() => navigate('/daily-game')}
+              className="w-full py-3 bg-white text-orange-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-50 transition-all shadow-lg relative z-10 flex items-center justify-center gap-2"
+            >
+              Play Today's Game <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
           <div className="card-3d p-8">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-bold text-warm-text dark:text-white italic uppercase tracking-tight">Market Matches</h3>

@@ -19,6 +19,7 @@ const CareersPage = React.lazy(() => import('./pages/CareersPage').then(module =
 const ConfidenceSupportPage = React.lazy(() => import('./pages/ConfidenceSupportPage').then(module => ({ default: module.ConfidenceSupportPage })));
 const CareerMapPage = React.lazy(() => import('./pages/CareerMapPage').then(module => ({ default: module.CareerMapPage })));
 const CalendarPage = React.lazy(() => import('./pages/CalendarPage').then(module => ({ default: module.CalendarPage })));
+const DailyGamePage = React.lazy(() => import('./pages/DailyGamePage').then(module => ({ default: module.DailyGamePage })));
 import { ThemeProvider } from './context/ThemeContext';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -60,6 +61,7 @@ const AppContent = () => {
             <Route path="/confidence" element={<ProtectedRoute><ConfidenceSupportPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="/daily-game" element={<ProtectedRoute><DailyGamePage /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
           </React.Suspense>

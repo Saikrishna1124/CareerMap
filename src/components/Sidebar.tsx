@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, Video, Award, Settings, Compass, Brain, Briefcase, Heart, Map, Calendar } from 'lucide-react';
+import { LayoutDashboard, FileText, Video, Award, Settings, Compass, Brain, Briefcase, Heart, Map, Calendar, Flame } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -15,6 +15,7 @@ const navItems = [
   { icon: Heart, label: 'Confidence Support', path: '/confidence' },
   { icon: Award, label: 'Performance', path: '/results' },
   { icon: Brain, label: 'Learning Hub', path: '/skills' },
+  { icon: Flame, label: 'Daily Mind Gym', path: '/daily-game' },
 ];
 
 export const Sidebar: React.FC = () => {

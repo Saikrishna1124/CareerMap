@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  ChevronDown, User, LogOut, Settings, Bell, BellRing, Trash
+  ChevronDown, User, LogOut, Settings, Bell, BellRing, Trash, Flame
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
+import { loadUserGameState, getTodayDateStr } from '../utils/dailyGameUtils';
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -101,6 +102,37 @@ export const Header: React.FC = () => {
         }
       });
 
+      // Check Daily Game Notification (Max 1 notification per day if uncompleted)
+      const userId = user?.email || user?.id || 'guest';
+      const todayStr = getTodayDateStr();
+      const gameState = loadUserGameState(userId);
+
+      const notifKey = `daily_game_notif_sent_${userId}_${todayStr}`;
+      const hasSentTodayNotif = localStorage.getItem(notifKey);
+
+      if (!gameState.todayState?.isCompleted && !hasSentTodayNotif) {
+        const gameNotifId = `daily-game-${todayStr}`;
+        const alreadyExists = notifs.some(n => n.id === gameNotifId);
+
+        if (!alreadyExists) {
+          const streakMsg = gameState.currentStreak > 0
+            ? `Solve today's puzzle to keep your ${gameState.currentStreak}-day streak alive 🔥!`
+            : `Solve today's 4-word tech puzzle to start your daily streak!`;
+
+          const gameNotif = {
+            id: gameNotifId,
+            title: "🔥 Daily Mind Gym is Ready!",
+            message: `Today's Career Connections puzzle is live! ${streakMsg}`,
+            createdAt: Date.now(),
+            read: false,
+            link: '/daily-game'
+          };
+          notifs.unshift(gameNotif);
+          updated = true;
+          localStorage.setItem(notifKey, 'true');
+        }
+      }
+
       if (updated || !savedNotifications) {
         localStorage.setItem('dashboard_notifications', JSON.stringify(notifs));
       }
@@ -152,6 +184,14 @@ export const Header: React.FC = () => {
     navigate('/login');
   };
 
+  const [streakCount, setStreakCount] = useState<number>(0);
+
+  useEffect(() => {
+    const userId = user?.email || user?.id || 'guest';
+    const gameState = loadUserGameState(userId);
+    setStreakCount(gameState.currentStreak);
+  }, [location.pathname, user]);
+
   const getPageTitle = () => {
     const path = location.pathname;
     if (path === '/dashboard') return 'Dashboard';
@@ -163,6 +203,7 @@ export const Header: React.FC = () => {
     if (path === '/careers') return 'Career Explorer';
     if (path === '/profile') return 'My Profile';
     if (path === '/settings') return 'Settings';
+    if (path === '/daily-game') return 'Daily Mind Gym';
     return 'CareerAI';
   };
 
@@ -173,6 +214,16 @@ export const Header: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-4 sm:gap-6">
+
+        {/* Daily Streak Flame Button */}
+        <button
+          onClick={() => navigate('/daily-game')}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-300 hover:scale-105 transition-all shadow-sm"
+          title="Daily Mind Gym Streak"
+        >
+          <Flame className="w-4 h-4 text-orange-500 animate-pulse" />
+          <span className="text-xs font-black font-mono">{streakCount} 🔥</span>
+        </button>
 
         {/* Notification Bell Symbol */}
         <div className="relative" ref={notificationDropdownRef}>
@@ -231,7 +282,14 @@ export const Header: React.FC = () => {
                     notifications.map((n) => (
                       <div
                         key={n.id}
-                        className={`p-3 rounded-xl border transition-all duration-300 text-left ${n.read
+                        onClick={() => {
+                          markAsRead(n.id);
+                          if (n.link) {
+                            navigate(n.link);
+                            setShowNotifications(false);
+                          }
+                        }}
+                        className={`p-3 rounded-xl border transition-all duration-300 text-left cursor-pointer hover:border-brand-purple/40 ${n.read
                             ? 'bg-stone-50/40 dark:bg-stone-900/10 border-warm-border/20 dark:border-stone-850/50'
                             : 'bg-brand-purple/5 dark:bg-brand-purple/10 border-brand-purple/15 shadow-sm'
                           } flex flex-col gap-1.5 relative`}
