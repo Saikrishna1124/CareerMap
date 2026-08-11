@@ -122,8 +122,8 @@ export const LandingPage: React.FC = () => {
                 key={t.id}
                 onClick={() => selectDarkTheme(t.id)}
                 className={`w-5 h-5 rounded-full transition-all duration-300 border-2 overflow-hidden ${activeDarkTheme === t.id
-                    ? 'border-brand-purple dark:border-white scale-110 shadow-md opacity-100 z-10'
-                    : 'border-transparent hover:scale-110 opacity-60 hover:opacity-100'
+                  ? 'border-brand-purple dark:border-white scale-110 shadow-md opacity-100 z-10'
+                  : 'border-transparent hover:scale-110 opacity-60 hover:opacity-100'
                   }`}
                 title={t.name}
                 style={{
@@ -290,7 +290,7 @@ export const LandingPage: React.FC = () => {
 
       {/* How It Works Section with Staggered Scroll-Reveal Animations */}
       <section id="how-it-works" className="py-24 px-4 md:px-8 max-w-7xl mx-auto">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
@@ -309,7 +309,7 @@ export const LandingPage: React.FC = () => {
         </motion.div>
 
         {/* Staggered Animated Grid Container */}
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -491,11 +491,11 @@ export const LandingPage: React.FC = () => {
           >
             {[
               {
-                name: "Sai Krishna",
-                role: "Lead Full Stack Developer",
-                image: "https://media.licdn.com/dms/image/v2/D5603AQEDFlDSWh--aw/profile-displayphoto-crop_800_800/B56Z4asTS1KQAI-/0/1778564281746?e=1787788800&v=beta&t=IVhnmNc75BfLN7Erv2F9jGO5-Pg3HZ-qWfPrSwEyFk4",
-                github: "https://github.com/Saikrishna1124",
-                linkedin: "https://www.linkedin.com/in/sai-krishna-gummadidala-261984354/"
+                name: "Chaitanya",
+                role: "Backend Developer",
+                image: "https://media.licdn.com/dms/image/v2/D5635AQFM2J_fwboIyA/profile-framedphoto-shrink_800_800/B56Z5pFAcCHkAY-/0/1779879381079?e=1786906800&v=beta&t=Aucd9Cd2yUIO-oIvoJwSV-MpUJ_TTls4oMV0SebnMeM",
+                github: "https://github.com/GUTHACHAITANYA",
+                linkedin: "https://www.linkedin.com/in/gutha-chaitanya-282a27353/"
               },
               {
                 name: "Bharath Kumar",
@@ -504,16 +504,16 @@ export const LandingPage: React.FC = () => {
                 linkedin: "https://www.linkedin.com/in/bharath-kumar-kuruva-513195317/"
               },
               {
-                name: "Chaitanya",
-                role: "Backend Developer",
-                image: "https://media.licdn.com/dms/image/v2/D5635AQFM2J_fwboIyA/profile-framedphoto-shrink_800_800/B56Z5pFAcCHkAY-/0/1779879381079?e=1786906800&v=beta&t=Aucd9Cd2yUIO-oIvoJwSV-MpUJ_TTls4oMV0SebnMeM",
-                github: "https://github.com/GUTHACHAITANYA",
-                linkedin: "https://www.linkedin.com/in/gutha-chaitanya-282a27353/"
+                name: "Sai Krishna",
+                role: "Lead Full Stack Developer",
+                image: "https://media.licdn.com/dms/image/v2/D5603AQEDFlDSWh--aw/profile-displayphoto-crop_800_800/B56Z4asTS1KQAI-/0/1778564281746?e=1787788800&v=beta&t=IVhnmNc75BfLN7Erv2F9jGO5-Pg3HZ-qWfPrSwEyFk4",
+                github: "https://github.com/Saikrishna1124",
+                linkedin: "https://www.linkedin.com/in/sai-krishna-gummadidala-261984354/"
               },
               {
                 name: "Tarun",
                 role: "Database Engineer",
-                image: "https://media.licdn.com/dms/image/v2/D4D03AQEh60WZpWWU5g/profile-displayphoto-crop_800_800/B4DZ1YGbjjHkAI-/0/1775299575532?e=1787788800&v=beta&t=AqSiD54piLCDxsg-okkqVVrCFy--jNEv7XpXeYwsS5I",
+                image: "/tarun.jpg",
                 github: "https://github.com/Tarunmuriki",
                 linkedin: "https://www.linkedin.com/in/muriki-tarun/"
               },
@@ -547,7 +547,7 @@ export const LandingPage: React.FC = () => {
               {
                 name: "Tarun",
                 role: "Database Engineer",
-                image: "https://media.licdn.com/dms/image/v2/D4D03AQEh60WZpWWU5g/profile-displayphoto-crop_800_800/B4DZ1YGbjjHkAI-/0/1775299575532?e=1787788800&v=beta&t=AqSiD54piLCDxsg-okkqVVrCFy--jNEv7XpXeYwsS5I",
+                image: "/tarun.jpg",
                 github: "https://github.com/Tarunmuriki",
                 linkedin: "https://www.linkedin.com/in/muriki-tarun/"
               },

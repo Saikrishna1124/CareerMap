@@ -72,7 +72,7 @@ export const Header: React.FC = () => {
               company: ev.company,
               role: ev.role,
               type: ev.type,
-              scheduledTime: `${ev.date} {ev.time}`,
+              scheduledTime: `${ev.date} ${ev.time}`,
               createdAt: Date.now(),
               read: false
             };
