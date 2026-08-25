@@ -493,7 +493,7 @@ export const LandingPage: React.FC = () => {
               {
                 name: "Chaitanya",
                 role: "Backend Developer",
-                image: "https://media.licdn.com/dms/image/v2/D5635AQFM2J_fwboIyA/profile-framedphoto-shrink_800_800/B56Z5pFAcCHkAY-/0/1779879381079?e=1786906800&v=beta&t=Aucd9Cd2yUIO-oIvoJwSV-MpUJ_TTls4oMV0SebnMeM",
+                image: "https://media.licdn.com/dms/image/v2/D5635AQFM2J_fwboIyA/profile-framedphoto-shrink_800_800/B56Z5pFAcCHkAY-/0/1779879381079?e=1788242400&v=beta&t=_nNuJ2Objk2Ya3RGUhMv2ZyybtHfLmjCGqQUPEgd-os",
                 github: "https://github.com/GUTHACHAITANYA",
                 linkedin: "https://www.linkedin.com/in/gutha-chaitanya-282a27353/"
               },
@@ -513,7 +513,7 @@ export const LandingPage: React.FC = () => {
               {
                 name: "Tarun",
                 role: "Database Engineer",
-                image: "/tarun.jpg",
+                image: "https://media.licdn.com/dms/image/v2/D4D03AQEh60WZpWWU5g/profile-displayphoto-crop_800_800/B4DZ1YGbjjHkAI-/0/1775299575532?e=1788998400&v=beta&t=stsKmWulS5UlmxqfX9sS4Tz7gdOW337Bw1_4RWWV4-4",
                 github: "https://github.com/Tarunmuriki",
                 linkedin: "https://www.linkedin.com/in/muriki-tarun/"
               },
@@ -521,6 +521,7 @@ export const LandingPage: React.FC = () => {
                 name: "Jyothsna Vamisetti",
                 role: "Frontend Developer",
                 image: "/jyothsna.jpg",
+                github: "https://github.com/24joshu",
                 linkedin: "https://www.linkedin.com/in/jyothsnavamisetti/"
               },
               // Loop duplication for seamless continuous scroll
@@ -540,14 +541,14 @@ export const LandingPage: React.FC = () => {
               {
                 name: "Chaitanya",
                 role: "Backend Developer",
-                image: "https://media.licdn.com/dms/image/v2/D5635AQFM2J_fwboIyA/profile-framedphoto-shrink_800_800/B56Z5pFAcCHkAY-/0/1779879381079?e=1786906800&v=beta&t=Aucd9Cd2yUIO-oIvoJwSV-MpUJ_TTls4oMV0SebnMeM",
+                image: "https://media.licdn.com/dms/image/v2/D5635AQFM2J_fwboIyA/profile-framedphoto-shrink_800_800/B56Z5pFAcCHkAY-/0/1779879381079?e=1788242400&v=beta&t=_nNuJ2Objk2Ya3RGUhMv2ZyybtHfLmjCGqQUPEgd-os",
                 github: "https://github.com/GUTHACHAITANYA",
                 linkedin: "https://www.linkedin.com/in/gutha-chaitanya-282a27353/"
               },
               {
                 name: "Tarun",
                 role: "Database Engineer",
-                image: "/tarun.jpg",
+                image: "https://media.licdn.com/dms/image/v2/D4D03AQEh60WZpWWU5g/profile-displayphoto-crop_800_800/B4DZ1YGbjjHkAI-/0/1775299575532?e=1788998400&v=beta&t=stsKmWulS5UlmxqfX9sS4Tz7gdOW337Bw1_4RWWV4-4",
                 github: "https://github.com/Tarunmuriki",
                 linkedin: "https://www.linkedin.com/in/muriki-tarun/"
               },
@@ -555,6 +556,7 @@ export const LandingPage: React.FC = () => {
                 name: "Jyothsna Vamisetti",
                 role: "Frontend Developer",
                 image: "/jyothsna.jpg",
+                github: "https://github.com/24joshu",
                 linkedin: "https://www.linkedin.com/in/jyothsnavamisetti/"
               }
             ].map((member, idx) => (
