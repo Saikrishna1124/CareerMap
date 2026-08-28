@@ -493,27 +493,28 @@ export const LandingPage: React.FC = () => {
               {
                 name: "Chaitanya",
                 role: "Backend Developer",
-                image: "https://media.licdn.com/dms/image/v2/D5635AQFM2J_fwboIyA/profile-framedphoto-shrink_800_800/B56Z5pFAcCHkAY-/0/1779879381079?e=1788242400&v=beta&t=_nNuJ2Objk2Ya3RGUhMv2ZyybtHfLmjCGqQUPEgd-os",
+                image: "/chaitanya.png",
                 github: "https://github.com/GUTHACHAITANYA",
                 linkedin: "https://www.linkedin.com/in/gutha-chaitanya-282a27353/"
               },
               {
                 name: "Bharath Kumar",
                 role: "Backend Developer",
-                image: "https://media.licdn.com/dms/image/v2/D4D03AQFbDG1cuOPM1w/profile-displayphoto-crop_800_800/B4DZ2FtJOPJ4AI-/0/1776064705322?e=1787788800&v=beta&t=LaX_W2oxHoihGIroZtWhSs5frYmtim25_QFJKyuk7ps",
+                image: "/bharath.png",
+                github: "https://github.com/Kuruva-Bharath",
                 linkedin: "https://www.linkedin.com/in/bharath-kumar-kuruva-513195317/"
               },
               {
                 name: "Sai Krishna",
                 role: "Lead Full Stack Developer",
-                image: "https://media.licdn.com/dms/image/v2/D5603AQEDFlDSWh--aw/profile-displayphoto-crop_800_800/B56Z4asTS1KQAI-/0/1778564281746?e=1787788800&v=beta&t=IVhnmNc75BfLN7Erv2F9jGO5-Pg3HZ-qWfPrSwEyFk4",
+                image: "/saikrishna.png",
                 github: "https://github.com/Saikrishna1124",
                 linkedin: "https://www.linkedin.com/in/sai-krishna-gummadidala-261984354/"
               },
               {
-                name: "Tarun",
+                name: "Tarun Muriki",
                 role: "Database Engineer",
-                image: "https://media.licdn.com/dms/image/v2/D4D03AQEh60WZpWWU5g/profile-displayphoto-crop_800_800/B4DZ1YGbjjHkAI-/0/1775299575532?e=1788998400&v=beta&t=stsKmWulS5UlmxqfX9sS4Tz7gdOW337Bw1_4RWWV4-4",
+                image: "/tarun.jpg",
                 github: "https://github.com/Tarunmuriki",
                 linkedin: "https://www.linkedin.com/in/muriki-tarun/"
               },
@@ -528,27 +529,28 @@ export const LandingPage: React.FC = () => {
               {
                 name: "Sai Krishna",
                 role: "Lead Full Stack Developer",
-                image: "https://media.licdn.com/dms/image/v2/D5603AQEDFlDSWh--aw/profile-displayphoto-crop_800_800/B56Z4asTS1KQAI-/0/1778564281746?e=1787788800&v=beta&t=IVhnmNc75BfLN7Erv2F9jGO5-Pg3HZ-qWfPrSwEyFk4",
+                image: "/saikrishna.png",
                 github: "https://github.com/Saikrishna1124",
                 linkedin: "https://www.linkedin.com/in/sai-krishna-gummadidala-261984354/"
               },
               {
                 name: "Bharath Kumar",
                 role: "Backend Developer",
-                image: "https://media.licdn.com/dms/image/v2/D4D03AQFbDG1cuOPM1w/profile-displayphoto-crop_800_800/B4DZ2FtJOPJ4AI-/0/1776064705322?e=1787788800&v=beta&t=LaX_W2oxHoihGIroZtWhSs5frYmtim25_QFJKyuk7ps",
+                image: "/bharath.png",
+                github: "https://github.com/Kuruva-Bharath",
                 linkedin: "https://www.linkedin.com/in/bharath-kumar-kuruva-513195317/"
               },
               {
                 name: "Chaitanya",
                 role: "Backend Developer",
-                image: "https://media.licdn.com/dms/image/v2/D5635AQFM2J_fwboIyA/profile-framedphoto-shrink_800_800/B56Z5pFAcCHkAY-/0/1779879381079?e=1788242400&v=beta&t=_nNuJ2Objk2Ya3RGUhMv2ZyybtHfLmjCGqQUPEgd-os",
+                image: "/chaitanya.png",
                 github: "https://github.com/GUTHACHAITANYA",
                 linkedin: "https://www.linkedin.com/in/gutha-chaitanya-282a27353/"
               },
               {
-                name: "Tarun",
+                name: "Tarun Muriki",
                 role: "Database Engineer",
-                image: "https://media.licdn.com/dms/image/v2/D4D03AQEh60WZpWWU5g/profile-displayphoto-crop_800_800/B4DZ1YGbjjHkAI-/0/1775299575532?e=1788998400&v=beta&t=stsKmWulS5UlmxqfX9sS4Tz7gdOW337Bw1_4RWWV4-4",
+                image: "/tarun.jpg",
                 github: "https://github.com/Tarunmuriki",
                 linkedin: "https://www.linkedin.com/in/muriki-tarun/"
               },
