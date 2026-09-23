@@ -47,6 +47,7 @@ async function generateAIContent(options: {
   const requestedModel = options.model || "gemini-3.5-flash";
   const modelsToTry = [
     requestedModel,
+    "gemini-2.5-flash",
     "gemini-3.1-flash-lite",
     "gemini-flash-latest"
   ];
@@ -781,6 +782,7 @@ async function streamAIContent(options: {
   const requestedModel = options.model || "gemini-3.5-flash";
   const modelsToTry = [
     requestedModel,
+    "gemini-2.5-flash",
     "gemini-3.1-flash-lite",
     "gemini-flash-latest"
   ];
@@ -894,7 +896,10 @@ async function startServer() {
     // Support Authorization: Bearer <token> header for better reliability in iframes
     const authHeader = req.headers.authorization;
     if (!token && authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.substring(7);
+      const candidate = authHeader.substring(7);
+      if (candidate && candidate !== 'null' && candidate !== 'undefined') {
+        token = candidate;
+      }
     }
 
     if (!token) return res.status(401).json({ error: "Unauthorized" });
@@ -905,6 +910,27 @@ async function startServer() {
     } catch (err) {
       res.status(401).json({ error: "Invalid token" });
     }
+  };
+
+  const optionalAuthenticate = (req: any, res: any, next: any) => {
+    let token = req.cookies.token;
+    const authHeader = req.headers.authorization;
+    if (!token && authHeader && authHeader.startsWith('Bearer ')) {
+      const candidate = authHeader.substring(7);
+      if (candidate && candidate !== 'null' && candidate !== 'undefined') {
+        token = candidate;
+      }
+    }
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+      } catch (err) {
+        // Guest user or expired token; allow request to proceed without user object
+      }
+    }
+    next();
   };
 
   // Auth Endpoints
@@ -1918,7 +1944,7 @@ Return the improved resume as a STRUCTURED JSON object with this EXACT schema:
     }
   });
 
-  app.post("/api/chat", authenticate, async (req: any, res) => {
+  app.post("/api/chat", optionalAuthenticate, async (req: any, res) => {
     const { message, context, stream } = req.body;
 
     const systemPrompt = `You are CareerMap AI, a professional career coach, resume expert, and technical advisor.

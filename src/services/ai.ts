@@ -52,12 +52,16 @@ export async function getInterviewQuestions(role: string, type: string) {
 
 export async function getChatbotResponse(message: string, context: string) {
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    const token = localStorage.getItem('token');
+    if (token && token !== 'null' && token !== 'undefined') {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
+      headers,
       body: JSON.stringify({ message, context })
     });
     if (!res.ok) throw new Error('Chat failed');
@@ -70,12 +74,16 @@ export async function getChatbotResponse(message: string, context: string) {
 
 export async function* streamChatResponse(message: string, context: string) {
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    const token = localStorage.getItem('token');
+    if (token && token !== 'null' && token !== 'undefined') {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
+      headers,
       body: JSON.stringify({ message, context, stream: true })
     });
 
