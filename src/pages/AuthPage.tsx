@@ -294,7 +294,7 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-[#F5F7FB] dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 pl-11 focus:ring-2 focus:ring-indigo-600 outline-none transition-all dark:text-white"
-                  placeholder="name@example.com"
+                  placeholder="Enter your email"
                 />
               </div>
             </div>
@@ -309,7 +309,7 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-[#F5F7FB] dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 pl-11 pr-12 focus:ring-2 focus:ring-indigo-600 outline-none transition-all dark:text-white"
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                 />
                 <button
                   type="button"
@@ -349,7 +349,7 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-[#F5F7FB] dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 pl-11 focus:ring-2 focus:ring-indigo-600 outline-none transition-all dark:text-white"
-                  placeholder="John Doe"
+                  placeholder="Enter your full name"
                 />
               </div>
             </div>
@@ -364,7 +364,7 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-[#F5F7FB] dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 pl-11 focus:ring-2 focus:ring-indigo-600 outline-none transition-all dark:text-white"
-                  placeholder="name@example.com"
+                  placeholder="Enter your email address"
                 />
               </div>
               <p className="text-[11px] text-slate-400 ml-1">We will send a 6-digit verification code to this inbox.</p>
@@ -381,7 +381,7 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-[#F5F7FB] dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 pl-11 pr-12 focus:ring-2 focus:ring-indigo-600 outline-none transition-all dark:text-white"
-                  placeholder="••••••••"
+                  placeholder="Enter your password (min 6 characters)"
                 />
                 <button
                   type="button"
