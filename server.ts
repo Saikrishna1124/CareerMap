@@ -11,6 +11,7 @@ import pg from "pg";
 import * as schema from "./src/db/schema.ts";
 import { eq, desc, sql, and } from "drizzle-orm";
 import { GoogleGenAI, Type } from "@google/genai";
+import { sendOtpEmail } from "./src/services/emailService.ts";
 
 dotenv.config();
 
@@ -933,26 +934,271 @@ async function startServer() {
     next();
   };
 
-  // Auth Endpoints
+  // Temporary storage for pending registrations awaiting email OTP verification
+  interface PendingRegistration {
+    name: string;
+    email: string;
+    passwordHash: string;
+    otp: string;
+    expiresAt: number;
+    lastSentAt: number;
+    attempts: number;
+  }
+  const pendingRegistrations = new Map<string, PendingRegistration>();
+
+  // Prune expired OTP registrations periodically
+  setInterval(() => {
+    const now = Date.now();
+    for (const [email, record] of pendingRegistrations.entries()) {
+      if (record.expiresAt < now) {
+        pendingRegistrations.delete(email);
+      }
+    }
+  }, 5 * 60 * 1000);
+
+  // Auth Endpoints - Step 1: Request Registration OTP
+  app.post("/api/auth/register-otp", async (req, res) => {
+    try {
+      const { email, password, name } = req.body;
+
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        return res.status(400).json({ error: "Please enter your full name." });
+      }
+
+      if (!email || typeof email !== 'string' || !email.trim()) {
+        return res.status(400).json({ error: "Please enter your email address." });
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(normalizedEmail)) {
+        return res.status(400).json({ error: "Please enter a valid email address." });
+      }
+
+      if (!password || typeof password !== 'string' || password.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters long." });
+      }
+
+      // Check if user already exists
+      const [existingUser] = await getDb()
+        .select({ id: schema.users.id })
+        .from(schema.users)
+        .where(eq(schema.users.email, normalizedEmail))
+        .limit(1);
+
+      if (existingUser) {
+        return res.status(400).json({ error: "An account with this email already exists. Please log in instead." });
+      }
+
+      // Check cooldown (60 seconds)
+      const existingPending = pendingRegistrations.get(normalizedEmail);
+      if (existingPending && Date.now() - existingPending.lastSentAt < 60000) {
+        const remainingSeconds = Math.ceil((60000 - (Date.now() - existingPending.lastSentAt)) / 1000);
+        return res.status(429).json({
+          error: `Please wait ${remainingSeconds} seconds before requesting a new verification code.`
+        });
+      }
+
+      // Generate 6-digit numeric OTP code
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      // Save pending registration valid for 10 minutes
+      pendingRegistrations.set(normalizedEmail, {
+        name: name.trim(),
+        email: normalizedEmail,
+        passwordHash,
+        otp,
+        expiresAt: Date.now() + 10 * 60 * 1000,
+        lastSentAt: Date.now(),
+        attempts: 0
+      });
+
+      // Send OTP via Email
+      const emailResult = await sendOtpEmail({
+        to: normalizedEmail,
+        name: name.trim(),
+        otp
+      });
+
+      if (!emailResult.success && !emailResult.devMode) {
+        pendingRegistrations.delete(normalizedEmail);
+        return res.status(500).json({
+          error: `Could not send verification email: ${emailResult.error || "Please check email configuration"}`
+        });
+      }
+
+      res.json({
+        success: true,
+        message: emailResult.devMode
+          ? `Code generated! (Check terminal console: ${otp})`
+          : `Verification code sent to ${normalizedEmail}`,
+        email: normalizedEmail,
+        devMode: emailResult.devMode
+      });
+    } catch (err: any) {
+      console.error("Register OTP error:", err);
+      res.status(500).json({ error: `Internal server error: ${err.message}` });
+    }
+  });
+
+  // Auth Endpoints - Step 1.5: Resend OTP
+  app.post("/api/auth/resend-otp", async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: "Email address is required." });
+      }
+
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const pending = pendingRegistrations.get(normalizedEmail);
+
+      if (!pending || pending.expiresAt < Date.now()) {
+        return res.status(400).json({
+          error: "No active verification request found or code expired. Please fill out the registration form again."
+        });
+      }
+
+      // Cooldown check (60s)
+      if (Date.now() - pending.lastSentAt < 60000) {
+        const remainingSeconds = Math.ceil((60000 - (Date.now() - pending.lastSentAt)) / 1000);
+        return res.status(429).json({
+          error: `Please wait ${remainingSeconds} seconds before requesting another code.`
+        });
+      }
+
+      // Generate new OTP
+      const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      pending.otp = newOtp;
+      pending.expiresAt = Date.now() + 10 * 60 * 1000;
+      pending.lastSentAt = Date.now();
+      pending.attempts = 0;
+
+      const emailResult = await sendOtpEmail({
+        to: normalizedEmail,
+        name: pending.name,
+        otp: newOtp
+      });
+
+      if (!emailResult.success && !emailResult.devMode) {
+        return res.status(500).json({
+          error: `Could not send email: ${emailResult.error || "Please check email configuration"}`
+        });
+      }
+
+      res.json({
+        success: true,
+        message: emailResult.devMode
+          ? `New code generated! (Check terminal console: ${newOtp})`
+          : `New verification code sent to ${normalizedEmail}`,
+        devMode: emailResult.devMode
+      });
+    } catch (err: any) {
+      console.error("Resend OTP error:", err);
+      res.status(500).json({ error: `Internal server error: ${err.message}` });
+    }
+  });
+
+  // Auth Endpoints - Step 2: Verify OTP and Create Account
+  app.post("/api/auth/verify-otp", async (req, res) => {
+    try {
+      const { email, otp } = req.body;
+      if (!email || !otp) {
+        return res.status(400).json({ error: "Email and verification code are required." });
+      }
+
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const submittedOtp = String(otp).trim();
+
+      const pending = pendingRegistrations.get(normalizedEmail);
+      if (!pending || pending.expiresAt < Date.now()) {
+        pendingRegistrations.delete(normalizedEmail);
+        return res.status(400).json({
+          error: "Verification code has expired. Please sign up again to receive a fresh code."
+        });
+      }
+
+      pending.attempts += 1;
+      if (pending.attempts > 5) {
+        pendingRegistrations.delete(normalizedEmail);
+        return res.status(400).json({
+          error: "Too many incorrect attempts. For security, please sign up again."
+        });
+      }
+
+      if (pending.otp !== submittedOtp) {
+        return res.status(400).json({
+          error: `Incorrect verification code. Please try again (${5 - pending.attempts} attempts remaining).`
+        });
+      }
+
+      // Check one last time if email was taken while waiting
+      const [existingUser] = await getDb()
+        .select({ id: schema.users.id })
+        .from(schema.users)
+        .where(eq(schema.users.email, normalizedEmail))
+        .limit(1);
+
+      if (existingUser) {
+        pendingRegistrations.delete(normalizedEmail);
+        return res.status(400).json({ error: "An account with this email already exists. Please log in." });
+      }
+
+      // OTP Validated! Create user in database
+      const id = randomUUID();
+      await getDb().insert(schema.users).values({
+        id,
+        email: pending.email,
+        password: pending.passwordHash,
+        name: pending.name,
+      });
+
+      // Clear pending registration
+      pendingRegistrations.delete(normalizedEmail);
+
+      // Sign JWT and set cookie for seamless automatic login
+      const token = jwt.sign({ id, email: pending.email, name: pending.name }, JWT_SECRET);
+      res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none", maxAge: 30 * 24 * 60 * 60 * 1000 });
+
+      res.json({
+        token,
+        id,
+        email: pending.email,
+        name: pending.name,
+        avatar: null,
+        title: null,
+        skills: [],
+        experience: [],
+        education: [],
+        socialLinks: {}
+      });
+    } catch (err: any) {
+      console.error("Verify OTP error:", err);
+      res.status(500).json({ error: `Internal server error: ${err.message}` });
+    }
+  });
+
+  // Direct signup endpoint (kept for backwards compatibility / fallback)
   app.post("/api/auth/signup", async (req, res) => {
     const { email, password, name } = req.body;
     try {
+      const normalizedEmail = (email || '').trim().toLowerCase();
       const hashedPassword = await bcrypt.hash(password, 10);
       const id = randomUUID();
 
       await getDb().insert(schema.users).values({
         id,
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         name,
       });
 
-      const token = jwt.sign({ id, email, name }, JWT_SECRET);
+      const token = jwt.sign({ id, email: normalizedEmail, name }, JWT_SECRET);
       res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none", maxAge: 30 * 24 * 60 * 60 * 1000 });
       res.json({
         token,
         id,
-        email,
+        email: normalizedEmail,
         name,
         avatar: null,
         title: null,
@@ -975,7 +1221,8 @@ async function startServer() {
   app.post("/api/auth/login", async (req, res) => {
     const { email, password } = req.body;
     try {
-      const [user] = await getDb().select().from(schema.users).where(eq(schema.users.email, email)).limit(1);
+      const normalizedEmail = (email || '').trim().toLowerCase();
+      const [user] = await getDb().select().from(schema.users).where(eq(schema.users.email, normalizedEmail)).limit(1);
       if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.status(401).json({ error: "Invalid credentials" });
       }

@@ -25,6 +25,9 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name: string) => Promise<void>;
+  sendOtp: (email: string, password: string, name: string) => Promise<{ success: boolean; message: string; devMode?: boolean }>;
+  resendOtp: (email: string) => Promise<{ success: boolean; message: string; devMode?: boolean }>;
+  verifyOtp: (email: string, otp: string) => Promise<void>;
   logout: () => Promise<void>;
   fetchMe: () => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
@@ -90,6 +93,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const sendOtp = async (email: string, password: string, name: string) => {
+    const res = await fetch('/api/auth/register-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name })
+    });
+
+    const data = await res.json().catch(() => ({ error: 'Failed to send verification code' }));
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to send verification code');
+    }
+    return data;
+  };
+
+  const resendOtp = async (email: string) => {
+    const res = await fetch('/api/auth/resend-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await res.json().catch(() => ({ error: 'Failed to resend verification code' }));
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to resend verification code');
+    }
+    return data;
+  };
+
+  const verifyOtp = async (email: string, otp: string) => {
+    const res = await fetch('/api/auth/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, otp })
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: 'Verification failed' }));
+      throw new Error(errorData.error || 'Verification failed');
+    }
+
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const data = await res.json();
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+      setUser(data);
+    } else {
+      throw new Error('Server returned non-JSON response');
+    }
+  };
+
   const signup = async (email: string, password: string, name: string) => {
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
@@ -125,7 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, fetchMe, setUser }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, sendOtp, resendOtp, verifyOtp, logout, fetchMe, setUser }}>
       {children}
     </AuthContext.Provider>
   );
