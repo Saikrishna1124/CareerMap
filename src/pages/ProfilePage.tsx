@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { 
   User, Mail, Briefcase, GraduationCap, 
   Plus, Trash2, Save, Loader2, 
   CheckCircle2, Award, Github, Linkedin, Globe,
-  Activity, Star, Camera
+  Activity, Star, Camera, BarChart3, Radio, Sparkles
 } from 'lucide-react';
 import { 
   Radar, RadarChart, PolarGrid, 
-  PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer 
+  PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
+  Tooltip as RechartsTooltip
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 
@@ -35,6 +36,17 @@ export const ProfilePage: React.FC = () => {
 
   const [newSkill, setNewSkill] = useState('');
   const [newSkillLevel, setNewSkillLevel] = useState(70);
+
+  const [matrixView, setMatrixView] = useState<'radar' | 'bars'>('radar');
+  const [sortBy, setSortBy] = useState<'highest' | 'lowest' | 'default'>('highest');
+
+  // Sorted skills for clear, organized matrix visualization
+  const displaySkills = useMemo(() => {
+    const list = [...formData.skills];
+    if (sortBy === 'highest') return list.sort((a, b) => b.level - a.level);
+    if (sortBy === 'lowest') return list.sort((a, b) => a.level - b.level);
+    return list;
+  }, [formData.skills, sortBy]);
 
   useEffect(() => {
     if (user) {
@@ -230,76 +242,329 @@ export const ProfilePage: React.FC = () => {
         </div>
 
         <div className="md:col-span-2 space-y-8">
-          {/* Radar Chart Section */}
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-              <Activity size={120} className="text-indigo-600" />
-            </div>
+          {/* Enhanced Skill Matrix Section */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden relative">
+            {/* Ambient Background Glow */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-cyan-500/10 blur-3xl pointer-events-none rounded-full -mr-20 -mt-20"></div>
             
-            <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
-              <div className="flex-1 space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-xs font-bold uppercase tracking-wider">
-                  <Star size={12} fill="currentColor" /> Skill Intelligence
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Skill Matrix</h3>
-                <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
-                  Visualizing your current proficiency levels against industry standards. This matrix helps identify strengths and high-impact growth areas.
-                </p>
-                <div className="flex gap-4 pt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-indigo-600 rounded-full"></div>
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Current Level</span>
+            <div className="p-6 sm:p-8 space-y-6 relative z-10">
+              {/* Header & Controls */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[11px] font-bold uppercase tracking-wider mb-2">
+                    <Sparkles size={12} /> Skill Intelligence Matrix
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Industry Standard</span>
-                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                    Skill Proficiency & Market Fit
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-lg">
+                    Real-time comparison between your active skill ratings and competitive industry benchmarks (80% standard).
+                  </p>
                 </div>
-              </div>
 
-              <div className="w-full h-[300px] md:w-[400px] min-w-0 min-h-0">
-                {formData.skills.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={formData.skills.map(s => ({
-                      subject: s.name,
-                      A: s.level,
-                      B: 80, // Industry Standard mock
-                      fullMark: 100,
-                    }))}>
-                      <PolarGrid stroke="#e2e8f0" />
-                      <PolarAngleAxis 
-                        dataKey="subject" 
-                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
-                      />
-                      <PolarRadiusAxis 
-                        angle={30} 
-                        domain={[0, 100]} 
-                        tick={false}
-                        axisLine={false}
-                      />
-                      <Radar
-                        name="Current"
-                        dataKey="A"
-                        stroke="#4f46e5"
-                        fill="#4f46e5"
-                        fillOpacity={0.6}
-                      />
-                      <Radar
-                        name="Standard"
-                        dataKey="B"
-                        stroke="#cbd5e1"
-                        fill="#cbd5e1"
-                        fillOpacity={0.3}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl">
-                    <Star size={32} className="mb-2 opacity-20" />
-                    <p className="text-sm font-medium">Add skills to generate matrix</p>
+                {/* View Switcher Toggle */}
+                {formData.skills.length > 0 && (
+                  <div className="flex items-center self-start sm:self-center p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-inner">
+                    <button
+                      type="button"
+                      onClick={() => setMatrixView('radar')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        matrixView === 'radar'
+                          ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      }`}
+                    >
+                      <Radio size={13} /> Radar Web
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMatrixView('bars')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        matrixView === 'bars'
+                          ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      }`}
+                    >
+                      <BarChart3 size={13} /> Breakdown Bars
+                    </button>
                   </div>
                 )}
               </div>
+
+              {/* Chart & Visualization Content */}
+              {formData.skills.length === 0 ? (
+                <div className="w-full py-16 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50/50 dark:bg-slate-950/30">
+                  <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl text-indigo-500 mb-3">
+                    <Star size={32} />
+                  </div>
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No Skills Added Yet</p>
+                  <p className="text-xs text-slate-400 mt-1 max-w-xs text-center">
+                    Add your programming languages, frameworks, or tools on the left to generate your interactive matrix.
+                  </p>
+                </div>
+              ) : matrixView === 'bars' ? (
+                /* Clean Horizontal Matrix Graph (Primary View) */
+                <div className="space-y-5">
+                  {/* Graph Controls & Legend Bar */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">Your Proficiency</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-0.5 border-t-2 border-dashed border-slate-400 dark:border-slate-500"></span>
+                        <span className="font-semibold text-slate-500 dark:text-slate-400">80% Market Benchmark</span>
+                      </div>
+                    </div>
+
+                    {/* Quick Sort Options */}
+                    <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl">
+                      <span className="text-[10px] font-bold text-slate-400 px-2 uppercase tracking-wider">Sort:</span>
+                      <button
+                        type="button"
+                        onClick={() => setSortBy('highest')}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                          sortBy === 'highest'
+                            ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        Highest
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSortBy('lowest')}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                          sortBy === 'lowest'
+                            ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        Lowest
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSortBy('default')}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                          sortBy === 'default'
+                            ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        Default
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Graph Canvas with Vertical Gridlines */}
+                  <div className="relative pt-6 pb-2">
+                    {/* Background Gridlines & Axis Numbers */}
+                    <div className="absolute inset-0 pointer-events-none flex justify-between text-[10px] font-semibold text-slate-300 dark:text-slate-600">
+                      <div className="relative h-full flex flex-col justify-between" style={{ left: '0%' }}>
+                        <div className="border-l border-slate-200 dark:border-slate-800/80 h-full"></div>
+                        <span className="-ml-1">0%</span>
+                      </div>
+                      <div className="relative h-full flex flex-col justify-between" style={{ left: '25%' }}>
+                        <div className="border-l border-slate-200 dark:border-slate-800/80 h-full"></div>
+                        <span className="-ml-3">25%</span>
+                      </div>
+                      <div className="relative h-full flex flex-col justify-between" style={{ left: '50%' }}>
+                        <div className="border-l border-slate-200 dark:border-slate-800/80 h-full"></div>
+                        <span className="-ml-3">50%</span>
+                      </div>
+                      <div className="relative h-full flex flex-col justify-between" style={{ left: '75%' }}>
+                        <div className="border-l border-slate-200 dark:border-slate-800/80 h-full"></div>
+                        <span className="-ml-3">75%</span>
+                      </div>
+                      <div className="relative h-full flex flex-col justify-between" style={{ left: '100%' }}>
+                        <div className="border-l border-slate-200 dark:border-slate-800/80 h-full"></div>
+                        <span className="-ml-5">100%</span>
+                      </div>
+                    </div>
+
+                    {/* 80% Benchmark Vertical Line Overlay */}
+                    <div 
+                      className="absolute top-0 bottom-6 w-0.5 border-l-2 border-dashed border-indigo-400/80 dark:border-cyan-400/80 z-20 pointer-events-none"
+                      style={{ left: '80%' }}
+                    >
+                      <span className="absolute -top-5 -translate-x-1/2 px-1.5 py-0.5 rounded bg-indigo-500/10 dark:bg-cyan-500/20 text-indigo-600 dark:text-cyan-300 text-[9px] font-black tracking-wider uppercase border border-indigo-300/40 dark:border-cyan-400/30 whitespace-nowrap shadow-sm">
+                        80% Target
+                      </span>
+                    </div>
+
+                    {/* Skill Rows */}
+                    <div className="space-y-3 relative z-10">
+                      {displaySkills.map((skill, idx) => {
+                        const diff = skill.level - 80;
+                        const isExceeding = diff >= 0;
+                        return (
+                          <div 
+                            key={skill.name + idx}
+                            className="group p-3 rounded-2xl bg-white/70 dark:bg-slate-900/70 hover:bg-slate-50 dark:hover:bg-slate-800/70 border border-slate-200/70 dark:border-slate-800 transition-all duration-200 shadow-sm hover:shadow-md"
+                          >
+                            <div className="flex items-center justify-between mb-2 text-xs">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 w-4">
+                                  #{idx + 1}
+                                </span>
+                                <span className="font-bold text-slate-900 dark:text-white text-sm">
+                                  {skill.name}
+                                </span>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                  skill.level >= 85
+                                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                    : skill.level >= 70
+                                    ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'
+                                    : 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                                }`}>
+                                  {skill.level >= 85 ? 'Master' : skill.level >= 70 ? 'Proficient' : 'Developing'}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <span className="font-black text-slate-900 dark:text-white text-sm">
+                                  {skill.level}%
+                                </span>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-0.5 ${
+                                  isExceeding 
+                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                }`}>
+                                  {isExceeding ? `▲ +${diff}%` : `▼ ${diff}%`}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Bar Track */}
+                            <div className="relative w-full h-3.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${skill.level}%` }}
+                                transition={{ duration: 0.6, ease: 'easeOut' }}
+                                className={`h-full rounded-full transition-all ${
+                                  skill.level >= 80
+                                    ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]'
+                                    : 'bg-gradient-to-r from-indigo-500 to-indigo-600'
+                                }`}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Spacious Polar Radar (Alternative View) */
+                <div className="flex flex-col items-center">
+                  <div className="w-full h-[360px] sm:h-[400px] min-w-0 min-h-0 relative">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart 
+                        cx="50%" 
+                        cy="50%" 
+                        outerRadius="62%" 
+                        data={formData.skills.map(s => ({
+                          subject: s.name,
+                          A: s.level,
+                          B: 80,
+                          fullMark: 100,
+                        }))}
+                      >
+                        <defs>
+                          <linearGradient id="userRadarGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#6366f1" stopOpacity={0.75} />
+                            <stop offset="50%" stopColor="#8b5cf6" stopOpacity={0.6} />
+                            <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.4} />
+                          </linearGradient>
+                        </defs>
+
+                        <PolarGrid stroke="#cbd5e1" strokeDasharray="3 3" opacity={0.6} />
+                        <PolarAngleAxis 
+                          dataKey="subject" 
+                          tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }}
+                        />
+                        <PolarRadiusAxis 
+                          angle={30} 
+                          domain={[0, 100]} 
+                          tick={{ fill: '#94a3b8', fontSize: 9 }}
+                          tickCount={5}
+                          axisLine={false}
+                        />
+
+                        {/* Interactive Tooltip */}
+                        <RechartsTooltip 
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload;
+                              const diff = data.A - data.B;
+                              return (
+                                <div className="bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md border border-slate-700/80 p-3 rounded-2xl shadow-2xl text-xs text-white min-w-[190px] space-y-1.5 pointer-events-none">
+                                  <div className="font-black text-sm text-indigo-300 flex items-center justify-between border-b border-slate-800 pb-1">
+                                    <span>{data.subject}</span>
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-indigo-500/30 text-indigo-200">
+                                      {data.A >= 85 ? 'Master' : data.A >= 70 ? 'Proficient' : 'Developing'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between pt-1">
+                                    <span className="flex items-center gap-1.5 text-slate-300">
+                                      <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_#6366f1]"></span> Your Rating:
+                                    </span>
+                                    <span className="font-black text-white text-sm">{data.A}%</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-slate-400">
+                                    <span className="flex items-center gap-1.5">
+                                      <span className="w-2 h-2 rounded-full bg-slate-500"></span> Benchmark:
+                                    </span>
+                                    <span className="font-semibold text-slate-300">{data.B}%</span>
+                                  </div>
+                                  <div className={`text-[11px] font-bold pt-1.5 border-t border-slate-800 flex items-center gap-1 ${diff >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                    {diff >= 0 ? `▲ +${diff}% Ahead of Target` : `▼ ${Math.abs(diff)}% Below Target`}
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+
+                        {/* Benchmark Line */}
+                        <Radar
+                          name="Benchmark (80%)"
+                          dataKey="B"
+                          stroke="#94a3b8"
+                          strokeWidth={1.5}
+                          strokeDasharray="4 4"
+                          fill="transparent"
+                        />
+
+                        {/* User Rating Polygon */}
+                        <Radar
+                          name="Your Rating"
+                          dataKey="A"
+                          stroke="#6366f1"
+                          strokeWidth={2.5}
+                          fill="url(#userRadarGrad)"
+                          fillOpacity={0.65}
+                          dot={{ r: 4, fill: '#6366f1', stroke: '#ffffff', strokeWidth: 2 }}
+                          activeDot={{ r: 6, fill: '#06b6d4', stroke: '#ffffff', strokeWidth: 2 }}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="flex items-center gap-6 pt-2 text-xs font-semibold">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3.5 h-3.5 rounded-md bg-gradient-to-r from-indigo-500 to-cyan-500 shadow-sm"></div>
+                      <span className="text-slate-700 dark:text-slate-300">Your Rating</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3.5 h-0.5 border-t-2 border-dashed border-slate-400"></div>
+                      <span className="text-slate-500 dark:text-slate-400">80% Benchmark</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
