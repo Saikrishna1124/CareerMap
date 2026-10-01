@@ -8,7 +8,7 @@ import {
   Route, Video, Target, Save, X
 } from 'lucide-react';
 import * as d3 from 'd3';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend } from 'recharts';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { Tooltip } from '../components/Tooltip';
 
@@ -618,49 +618,100 @@ export const SkillsPage: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div className="h-[400px] w-full min-w-0 min-h-0">
                   <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillGaps}>
-                      <PolarGrid stroke="#DDD5C8" />
-                      <PolarAngleAxis dataKey="skill" tick={{ fill: '#78716C', fontSize: 12, fontWeight: 500 }} />
-                      <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
-                      <Radar name="Current" dataKey="current" stroke="#4F378B" fill="#4F378B" fillOpacity={0.5} />
-                      <Radar name="Required" dataKey="required" stroke="#16A34A" fill="#16A34A" fillOpacity={0.3} />
+                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillGaps.map(g => ({
+                      ...g,
+                      currentPct: Math.round((g.current / 10) * 100),
+                      requiredPct: Math.round((g.required / 10) * 100),
+                      gapPct: Math.max(0, Math.round(((g.required - g.current) / 10) * 100))
+                    }))}>
+                      <PolarGrid stroke="#DDD5C8" className="dark:opacity-20" />
+                      <PolarAngleAxis dataKey="skill" tick={{ fill: '#78716C', fontSize: 12, fontWeight: 600 }} />
+                      <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                      <RechartsTooltip 
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-stone-900/95 backdrop-blur-md border border-stone-700/60 p-3 rounded-xl shadow-xl text-xs space-y-1.5 min-w-[160px]">
+                                <p className="font-bold text-white text-sm border-b border-stone-800 pb-1">{data.skill}</p>
+                                <div className="flex justify-between text-indigo-400">
+                                  <span>Current Level:</span>
+                                  <span className="font-black">{data.currentPct}%</span>
+                                </div>
+                                <div className="flex justify-between text-emerald-400">
+                                  <span>Required Level:</span>
+                                  <span className="font-black">{data.requiredPct}%</span>
+                                </div>
+                                <div className="flex justify-between font-bold text-amber-400 pt-1 border-t border-stone-800">
+                                  <span>Need to Learn:</span>
+                                  <span>{data.gapPct > 0 ? `+${data.gapPct}%` : 'Goal Met'}</span>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Radar name="Current Proficiency (%)" dataKey="currentPct" stroke="#4F378B" fill="#4F378B" fillOpacity={0.5} />
+                      <Radar name="Required Target (%)" dataKey="requiredPct" stroke="#16A34A" fill="#16A34A" fillOpacity={0.25} />
                       <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontWeight: 600 }} />
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="space-y-6">
-                  <h4 className="text-lg font-bold text-warm-text dark:text-white mb-4 border-b border-warm-border pb-2">Improvement Areas</h4>
+                  <div className="flex justify-between items-center border-b border-warm-border dark:border-stone-800 pb-2">
+                    <h4 className="text-lg font-bold text-warm-text dark:text-white">Improvement Areas & Gaps</h4>
+                    <span className="text-xs text-warm-muted font-medium">Target vs Current</span>
+                  </div>
                   {skillGaps.map((gap, i) => {
-                    const difference = gap.required - gap.current;
+                    const currentPct = Math.round((gap.current / 10) * 100);
+                    const requiredPct = Math.round((gap.required / 10) * 100);
+                    const gapPct = Math.max(0, requiredPct - currentPct);
                     return (
-                      <div key={i} className="space-y-2 p-3 rounded-xl bg-warm-bg/30 dark:bg-stone-900 shadow-sm border border-warm-border/20">
-                        <div className="flex justify-between text-sm">
-                          <span className="font-bold text-warm-text dark:text-stone-300">{gap.skill}</span>
-                          <span className="font-black text-brand-purple bg-badge-purple/50 px-2 py-0.5 rounded text-[10px]">Gap: {difference > 0 ? difference : 0}</span>
+                      <div key={i} className="space-y-2 p-3.5 rounded-xl bg-warm-bg/30 dark:bg-stone-900 shadow-sm border border-warm-border/20">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-bold text-warm-text dark:text-stone-200">{gap.skill}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-warm-muted font-mono">{currentPct}% / {requiredPct}%</span>
+                            <span className={`font-black px-2 py-0.5 rounded text-[11px] ${
+                              gapPct > 0 
+                                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20' 
+                                : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                            }`}>
+                              {gapPct > 0 ? `Need to learn: +${gapPct}%` : 'Requirement Met'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="h-2.5 bg-warm-border dark:bg-stone-800 rounded-full overflow-hidden flex shadow-inner">
+                        <div className="h-3 bg-warm-border/60 dark:bg-stone-800 rounded-full overflow-hidden flex shadow-inner relative">
                           <div 
-                            className="bg-brand-purple h-full shadow-[0_0_10px_rgba(79,55,139,0.5)]" 
-                            style={{ width: `${(gap.current / 10) * 100}%` }}
+                            className="bg-brand-purple h-full shadow-[0_0_10px_rgba(79,55,139,0.5)] transition-all duration-500" 
+                            style={{ width: `${currentPct}%` }}
+                            title={`Current: ${currentPct}%`}
                           />
-                          {difference > 0 && (
+                          {gapPct > 0 && (
                             <div 
-                              className="bg-success h-full opacity-40 animate-pulse" 
-                              style={{ width: `${(difference / 10) * 100}%` }}
+                              className="bg-emerald-500 h-full opacity-60 animate-pulse transition-all duration-500" 
+                              style={{ width: `${gapPct}%` }}
+                              title={`Gap to learn: +${gapPct}%`}
                             />
                           )}
                         </div>
-                        {difference > 0 && (
-                          <button 
-                            onClick={() => {
-                              setSubject(gap.skill);
-                              generateRoadmap(gap.skill);
-                            }}
-                            className="text-xs text-brand-purple hover:text-brand-purple/80 font-bold flex items-center gap-1 mt-1 transition-colors"
-                          >
-                            Generate Roadmap <ChevronRight size={12} />
-                          </button>
-                        )}
+                        <div className="flex justify-between items-center pt-1">
+                          <span className="text-[11px] text-warm-muted">
+                            {gapPct > 0 ? `Deficit: ${gapPct}% to reach the ${requiredPct}% industry requirement` : 'Ready for this role requirement'}
+                          </span>
+                          {gapPct > 0 && (
+                            <button 
+                              onClick={() => {
+                                setSubject(gap.skill);
+                                generateRoadmap(gap.skill);
+                              }}
+                              className="text-xs text-brand-purple hover:text-brand-purple/80 font-bold flex items-center gap-1 transition-colors"
+                            >
+                              Generate Roadmap <ChevronRight size={12} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
