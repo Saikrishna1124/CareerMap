@@ -451,6 +451,7 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
                     inputMode="numeric"
                     maxLength={1}
                     value={digit}
+                    onFocus={(e) => e.target.select()}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
                     onPaste={handleOtpPaste}
