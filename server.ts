@@ -12,6 +12,7 @@ import * as schema from "./src/db/schema.ts";
 import { eq, desc, sql, and } from "drizzle-orm";
 import { GoogleGenAI, Type } from "@google/genai";
 import { sendOtpEmail } from "./src/services/emailService.ts";
+import dns from "dns/promises";
 
 dotenv.config();
 
@@ -956,6 +957,37 @@ async function startServer() {
     }
   }, 5 * 60 * 1000);
 
+  // Helper to verify that an email domain exists and accepts mail (filters out fake domains)
+  async function isEmailDomainValid(email: string): Promise<{ valid: boolean; error?: string }> {
+    const parts = email.split('@');
+    if (parts.length !== 2) return { valid: false, error: "Please enter a valid email address." };
+    const domain = parts[1].toLowerCase().trim();
+
+    // Fast-path: trusted common email domains
+    const commonDomains = [
+      'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com',
+      'proton.me', 'protonmail.com', 'aol.com', 'zoho.com', 'mail.com',
+      'live.com', 'msn.com', 'yandex.com', 'googlemail.com'
+    ];
+    if (commonDomains.includes(domain)) {
+      return { valid: true };
+    }
+
+    try {
+      const mxRecords = await dns.resolveMx(domain);
+      if (!mxRecords || mxRecords.length === 0) {
+        return { valid: false, error: `The email domain "@${domain}" does not support receiving emails.` };
+      }
+      return { valid: true };
+    } catch (err: any) {
+      if (err.code === 'ENOTFOUND' || err.code === 'ENODATA' || err.code === 'SERVFAIL' || err.code === 'NOTFOUND') {
+        return { valid: false, error: `The email domain "@${domain}" does not exist. Please check your email address.` };
+      }
+      // DNS network timeout or temporary failure - do not block legitimate users
+      return { valid: true };
+    }
+  }
+
   // Auth Endpoints - Step 1: Request Registration OTP
   app.post("/api/auth/register-otp", async (req, res) => {
     try {
@@ -973,6 +1005,12 @@ async function startServer() {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(normalizedEmail)) {
         return res.status(400).json({ error: "Please enter a valid email address." });
+      }
+
+      // Check if email domain is valid and accepts mail
+      const domainCheck = await isEmailDomainValid(normalizedEmail);
+      if (!domainCheck.valid) {
+        return res.status(400).json({ error: domainCheck.error });
       }
 
       if (!password || typeof password !== 'string' || password.length < 6) {
