@@ -98,6 +98,9 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
       setSuccessMsg(response.message || `Verification code sent to ${email}`);
       if (response.devMode) {
         setDevNotice(response.message);
+        if (response.devCode) {
+          setOtpDigits(response.devCode.split('').slice(0, 6));
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to dispatch verification code. Please try again.');
@@ -118,6 +121,9 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
       setSuccessMsg(response.message || 'A fresh verification code has been sent.');
       if (response.devMode) {
         setDevNotice(response.message);
+        if (response.devCode) {
+          setOtpDigits(response.devCode.split('').slice(0, 6));
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Could not resend verification code.');

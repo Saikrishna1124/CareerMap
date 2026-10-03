@@ -41,6 +41,9 @@ function getTransporter(): Transporter | null {
         secure: false, // Use STARTTLS on port 587
         family: 4,     // Force IPv4 to prevent ENETUNREACH on IPv6-incompatible networks
         auth: { user, pass },
+        connectionTimeout: 5000, // 5s timeout so Render firewall doesn't hang
+        greetingTimeout: 5000,
+        socketTimeout: 5000,
         tls: {
           rejectUnauthorized: false
         }
@@ -52,6 +55,9 @@ function getTransporter(): Transporter | null {
         secure: port === 465,
         family: 4,     // Force IPv4
         auth: { user, pass },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 5000,
         tls: {
           rejectUnauthorized: false
         }
@@ -60,7 +66,10 @@ function getTransporter(): Transporter | null {
       transporter = nodemailer.createTransport({
         service,
         family: 4,     // Force IPv4
-        auth: { user, pass }
+        auth: { user, pass },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 5000
       } as any);
     }
   }
@@ -200,6 +209,36 @@ export async function sendOtpEmail({ to, name, otp }: SendOtpOptions): Promise<S
     </html>
   `;
 
+  // 1. Try Resend HTTP API if configured (Render / Cloud friendly - uses standard HTTPS port 443)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const from = process.env.EMAIL_FROM || 'CareerMap <onboarding@resend.dev>';
+      const resendRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from,
+          to: [to],
+          subject: `Your CareerMap Verification Code: ${otp}`,
+          html: htmlContent
+        })
+      });
+      if (resendRes.ok) {
+        console.log(`[EMAIL OTP SERVICE - RESEND] Verification code sent to ${to}`);
+        return { success: true };
+      } else {
+        const errText = await resendRes.text();
+        console.warn(`[EMAIL OTP SERVICE - RESEND WARN]`, errText);
+      }
+    } catch (resendErr: any) {
+      console.warn(`[EMAIL OTP SERVICE - RESEND ERROR]`, resendErr?.message);
+    }
+  }
+
+  // 2. Fall back to SMTP (Gmail / custom)
   try {
     await mailTransporter.sendMail({
       from: fromAddress,
