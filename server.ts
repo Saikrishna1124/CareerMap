@@ -1031,11 +1031,10 @@ async function startServer() {
       res.json({
         success: true,
         message: emailResult.devMode
-          ? (emailResult.message || `Verification Code: ${otp}`)
+          ? (emailResult.message || "Verification code dispatched.")
           : `Verification code sent to ${normalizedEmail}`,
         email: normalizedEmail,
-        devMode: emailResult.devMode,
-        devCode: emailResult.devMode ? otp : undefined
+        devMode: emailResult.devMode
       });
     } catch (err: any) {
       console.error("Register OTP error:", err);
@@ -1090,10 +1089,9 @@ async function startServer() {
       res.json({
         success: true,
         message: emailResult.devMode
-          ? (emailResult.message || `New Verification Code: ${newOtp}`)
+          ? (emailResult.message || "New verification code dispatched.")
           : `New verification code sent to ${normalizedEmail}`,
-        devMode: emailResult.devMode,
-        devCode: emailResult.devMode ? newOtp : undefined
+        devMode: emailResult.devMode
       });
     } catch (err: any) {
       console.error("Resend OTP error:", err);

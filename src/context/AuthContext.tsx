@@ -25,8 +25,8 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name: string) => Promise<void>;
-  sendOtp: (email: string, password: string, name: string) => Promise<{ success: boolean; message: string; devMode?: boolean; devCode?: string }>;
-  resendOtp: (email: string) => Promise<{ success: boolean; message: string; devMode?: boolean; devCode?: string }>;
+  sendOtp: (email: string, password: string, name: string) => Promise<{ success: boolean; message: string; devMode?: boolean }>;
+  resendOtp: (email: string) => Promise<{ success: boolean; message: string; devMode?: boolean }>;
   verifyOtp: (email: string, otp: string) => Promise<void>;
   logout: () => Promise<void>;
   fetchMe: () => Promise<void>;
