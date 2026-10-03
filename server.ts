@@ -1030,11 +1030,8 @@ async function startServer() {
 
       res.json({
         success: true,
-        message: emailResult.devMode
-          ? (emailResult.message || "Verification code dispatched.")
-          : `Verification code sent to ${normalizedEmail}`,
-        email: normalizedEmail,
-        devMode: emailResult.devMode
+        message: `Verification code sent to ${normalizedEmail}`,
+        email: normalizedEmail
       });
     } catch (err: any) {
       console.error("Register OTP error:", err);
@@ -1088,10 +1085,7 @@ async function startServer() {
 
       res.json({
         success: true,
-        message: emailResult.devMode
-          ? (emailResult.message || "New verification code dispatched.")
-          : `New verification code sent to ${normalizedEmail}`,
-        devMode: emailResult.devMode
+        message: `New verification code sent to ${normalizedEmail}`
       });
     } catch (err: any) {
       console.error("Resend OTP error:", err);

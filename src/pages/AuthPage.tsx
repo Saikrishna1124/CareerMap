@@ -17,7 +17,6 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
   const [signupStep, setSignupStep] = useState<'form' | 'otp'>('form');
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [devNotice, setDevNotice] = useState<string | null>(null);
 
   const otpInputsRef = useRef<(HTMLInputElement | null)[]>([]);
   const { login, sendOtp, resendOtp, verifyOtp, user } = useAuth();
@@ -34,7 +33,6 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
     setSignupStep('form');
     setError('');
     setSuccessMsg('');
-    setDevNotice(null);
     setOtpDigits(['', '', '', '', '', '']);
   }, [mode]);
 
@@ -77,7 +75,6 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
-    setDevNotice(null);
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
@@ -96,9 +93,6 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
       setSignupStep('otp');
       setResendCooldown(60);
       setSuccessMsg(response.message || `Verification code sent to ${email}`);
-      if (response.devMode) {
-        setDevNotice(response.message);
-      }
     } catch (err: any) {
       setError(err.message || 'Failed to dispatch verification code. Please try again.');
     } finally {
@@ -116,9 +110,6 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
       const response = await resendOtp(email.trim());
       setResendCooldown(60);
       setSuccessMsg(response.message || 'A fresh verification code has been sent.');
-      if (response.devMode) {
-        setDevNotice(response.message);
-      }
     } catch (err: any) {
       setError(err.message || 'Could not resend verification code.');
     } finally {
@@ -267,16 +258,6 @@ export const AuthPage: React.FC<{ mode: 'login' | 'signup' }> = ({ mode }) => {
             >
               <CheckCircle2 size={16} className="shrink-0" />
               <span>{successMsg}</span>
-            </motion.div>
-          )}
-
-          {devNotice && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mb-5 text-amber-700 dark:text-amber-400 text-xs bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-xl border border-amber-200 dark:border-amber-900/40 text-center"
-            >
-              💡 <strong>Dev Notice:</strong> {devNotice}
             </motion.div>
           )}
         </AnimatePresence>

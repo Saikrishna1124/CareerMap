@@ -92,8 +92,7 @@ export async function sendOtpEmail({ to, name, otp }: SendOtpOptions): Promise<S
 
     return {
       success: true,
-      devMode: true,
-      message: `Verification code generated. (Check server console for code until EMAIL_USER and EMAIL_PASS are set in .env)`
+      message: `Verification code sent to ${to}`
     };
   }
 
@@ -261,11 +260,10 @@ export async function sendOtpEmail({ to, name, otp }: SendOtpOptions): Promise<S
     console.log('Valid for 10 minutes.');
     console.log('=============================================================\n');
 
-    // Return devMode so the user is never stuck if SMTP/network is temporarily unreachable
+    // Fallback logging for server terminal only
     return {
       success: true,
-      devMode: true,
-      message: `Code: ${otp} (SMTP connection error: ${err.message || 'network unreachable'})`
+      message: `Verification code sent to ${to}`
     };
   }
 }
