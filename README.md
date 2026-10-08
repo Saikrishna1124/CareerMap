@@ -4,13 +4,10 @@
 
 ---
 
-## 📸 Platform Previews
+## 📸 Platform Preview
 
 ### 🌟 Landing Page
 ![CareerMap Landing Page](docs/screenshots/landing_page.png)
-
-### 📊 Main Intelligence Dashboard
-![CareerMap Dashboard](docs/screenshots/dashboard_page.png)
 
 ---
 
