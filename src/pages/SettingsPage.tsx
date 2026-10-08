@@ -356,6 +356,8 @@ export const SettingsPage: React.FC = () => {
                         switch (themeId) {
                           case 'warm-slate': return '☀️';
                           case 'teal-mint-light': return '🌱';
+                          case 'emerald-champagne': return '🌿';
+                          case 'burnt-orange-vanilla': return '🍊';
                           default: return '✨';
                         }
                       };
@@ -426,7 +428,6 @@ export const SettingsPage: React.FC = () => {
                       const getThemeEmoji = (themeId: string) => {
                         switch (themeId) {
                           case 'obsidian-warm': return '🌑';
-                          case 'cyber-pastel': return '🌸';
                           default: return '✨';
                         }
                       };
