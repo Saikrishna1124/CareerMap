@@ -149,12 +149,18 @@ export const CareersPage: React.FC = () => {
       const skillsContext = user?.skills?.map((s: any) => typeof s === 'string' ? s : s.name).join(', ') || 'Software Development';
       const query = queryOverride || searchQuery || user?.targetRole || '';
       
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (token && token !== 'null' && token !== 'undefined') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch('/api/jobs', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        credentials: 'include',
+        headers,
         body: JSON.stringify({ 
           skills: skillsContext, 
           type: filter,
@@ -187,9 +193,11 @@ export const CareersPage: React.FC = () => {
     }
   };
 
+  const skillsKey = (user?.skills || []).map((s: any) => typeof s === 'string' ? s : s.name).sort().join(',');
+
   useEffect(() => {
     fetchOpportunities();
-  }, [user?.skills, filter]);
+  }, [skillsKey, filter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,6 +208,8 @@ export const CareersPage: React.FC = () => {
   const filteredOpportunities = (Array.isArray(currentOpportunities) ? currentOpportunities : []).filter(op => {
     if (minMatchScore > 0 && (op.matchScore || 0) < minMatchScore) return false;
     if (locationFilter && !(op.location || '').toLowerCase().includes(locationFilter.toLowerCase())) return false;
+    if (filter === 'internships' && op.type !== 'Internship') return false;
+    if (filter === 'jobs' && op.type === 'Internship') return false;
     return true;
   });
 
@@ -318,20 +328,43 @@ export const CareersPage: React.FC = () => {
             
             <div className="md:col-span-4 flex gap-2 p-2 bg-white dark:bg-stone-900 rounded-[24px] border border-warm-border dark:border-stone-800 shadow-sm overflow-x-auto">
               {[
-                { id: 'all', label: 'All Ops', icon: Briefcase },
-                { id: 'jobs', label: 'Full-Time', icon: Building2 },
-                { id: 'internships', label: 'Internships', icon: GraduationCap }
+                { 
+                  id: 'all', 
+                  label: 'All Ops', 
+                  count: (currentOpportunities || []).length, 
+                  icon: Briefcase 
+                },
+                { 
+                  id: 'jobs', 
+                  label: 'Full-Time', 
+                  count: (currentOpportunities || []).filter(o => o.type !== 'Internship').length, 
+                  icon: Building2 
+                },
+                { 
+                  id: 'internships', 
+                  label: 'Internships', 
+                  count: (currentOpportunities || []).filter(o => o.type === 'Internship').length, 
+                  icon: GraduationCap 
+                }
               ].map(f => (
                 <button
                   key={f.id}
                   onClick={() => setFilter(f.id as any)}
-                  className={`flex-1 min-w-[90px] py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${
+                  className={`flex-1 min-w-[90px] py-2.5 px-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${
                     filter === f.id 
                       ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20' 
                       : 'bg-transparent text-warm-hint hover:text-brand-purple'
                   }`}
                 >
-                  <f.icon size={14} /> {f.label}
+                  <f.icon size={13} /> 
+                  <span>{f.label}</span>
+                  {f.count > 0 && (
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                      filter === f.id ? 'bg-white/20 text-white' : 'bg-warm-bg dark:bg-stone-800 text-warm-hint'
+                    }`}>
+                      {f.count}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -459,7 +492,23 @@ export const CareersPage: React.FC = () => {
               <Search size={24} />
             </div>
             <h2 className="text-xl font-black text-warm-text dark:text-white mb-2 tracking-tight">No Matching Roles Found</h2>
-            <p className="text-warm-secondary font-medium text-sm">Try adjusting your filters or running a new search analysis.</p>
+            <p className="text-warm-secondary font-medium text-sm max-w-md">
+              {filter === 'internships' 
+                ? 'No internships match your current filter settings. Try clearing your filters to view all available internships.'
+                : 'Try adjusting your filters or running a new search analysis.'}
+            </p>
+            <button
+              onClick={() => {
+                setMinMatchScore(0);
+                setLocationFilter('');
+                setSearchQuery('');
+                setFilter('all');
+                fetchOpportunities('');
+              }}
+              className="mt-6 px-8 py-3 bg-brand-purple text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-brand-purple/90 transition-all shadow-lg shadow-brand-purple/20"
+            >
+              Reset Filters & View All
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -497,11 +546,21 @@ export const CareersPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Company & Icon */}
-                <div className="flex items-start gap-4 mb-8">
+                {/* Company & Icon & Type Badge */}
+                <div className="flex items-start justify-between gap-4 mb-6">
                   <div className="w-16 h-16 rounded-2xl bg-warm-bg dark:bg-stone-950 border border-warm-border dark:border-stone-800 flex items-center justify-center text-brand-purple group-hover:bg-brand-purple group-hover:text-white transition-all transform group-hover:rotate-6">
                     {item.type === 'Internship' ? <GraduationCap size={32} /> : <Briefcase size={32} />}
                   </div>
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                    item.type === 'Internship' 
+                      ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800/80 shadow-sm'
+                      : item.type === 'Contract'
+                      ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800/80 shadow-sm'
+                      : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800/80 shadow-sm'
+                  }`}>
+                    {item.type === 'Internship' ? <GraduationCap size={12} /> : <Building2 size={12} />}
+                    {item.type}
+                  </span>
                 </div>
 
                 {/* Role Details */}

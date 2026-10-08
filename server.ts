@@ -13,6 +13,7 @@ import { eq, desc, sql, and } from "drizzle-orm";
 import { GoogleGenAI, Type } from "@google/genai";
 import { sendOtpEmail } from "./src/services/emailService.ts";
 import dns from "dns/promises";
+import { rankAndPersonalizeOpportunities, MASTER_OPPORTUNITIES, getCompanyUrl } from "./src/services/jobsCatalog.ts";
 
 dotenv.config();
 
@@ -2455,436 +2456,144 @@ Formatting Guidelines (Mandatory):
     }
   });
 
-  // Fallback data for when API quota is exceeded
-  const FALLBACK_JOBS = [
-    {
-      id: "fb-aicte-1",
-      title: "AICTE - Virtual Internship (Emerging Tech)",
-      company: "AICTE / EduSkills",
-      location: "Remote (India)",
-      type: "Internship",
-      salary: "Certification / Stipend",
-      postedAt: "Active Now",
-      matchScore: 99,
-      skills: ["Web Development", "AI/ML", "Cybersecurity"],
-      missingSkills: ["Cloud Architecture", "System Design"],
-      learningRoadmap: ["Complete AICTE coursework", "Build a live cloud project", "Get certification"],
-      suggestedProjects: ["E-commerce App with ML", "Threat Detection Dashboard"],
-      interviewTips: ["Focus on networking basics", "Be ready for problem-solving puzzles"],
-      description: "National level virtual internship program by AICTE and its partners. Gain industry skills and certificates.",
-      url: "https://internship.aicte-india.org/"
-    },
-    {
-      id: "fb-intern-google",
-      title: "Software Engineering Intern, Summer 2025",
-      company: "Google",
-      location: "Mountain View, CA / Remote",
-      type: "Internship",
-      salary: "$6,500 - $9,000/mo",
-      postedAt: "Active",
-      matchScore: 92,
-      skills: ["Java", "Python", "Data Structures"],
-      missingSkills: ["Large Scale Systems", "Testing Frameworks"],
-      learningRoadmap: ["Master complex DS/Algo", "Learn testing patterns", "Contribute to open source"],
-      suggestedProjects: ["Real-time Chat Engine", "Data Scraper for Insights"],
-      interviewTips: ["Focus on complexity analysis", "Practice tree and graph problems"],
-      description: "Work on products used by billions! Join a team at Google this summer.",
-      url: "https://careers.google.com"
-    },
-    {
-      id: "fb-amazon-genai",
-      title: "Senior Developer Advocate, GenAI - AWS",
-      company: "Amazon Web Services (AWS)",
-      location: "Global / Remote",
-      type: "Full-time",
-      salary: "Competitive",
-      postedAt: "Live Now",
-      matchScore: 98,
-      skills: ["GenAI", "AWS", "Developer Relations"],
-      missingSkills: ["Advanced PyTorch", "Public Speaking"],
-      learningRoadmap: ["Master AWS Bedrock SDK", "Create AI technical content", "Contribute to open source LLMs"],
-      suggestedProjects: ["Multi-model AI Agent", "AWS-powered RAG System"],
-      interviewTips: ["Study Amazon Leadership Principles", "Practice whiteboarding GenAI architectures"],
-      description: "Help developers build the future of Generative AI on AWS. Lead technical advocacy for Bedrock and Titan models.",
-      url: "https://amazon.jobs/en/jobs/3150372/senior-developer-advocate-genai-aws-developer-experience"
-    },
-    {
-      id: "fb-startup-1",
-      title: "Entry Level Full Stack Developer",
-      company: "TechFlow AI",
-      location: "Remote / New York",
-      type: "Full-time",
-      salary: "$80k - $120k",
-      postedAt: "1 day ago",
-      matchScore: 85,
-      skills: ["React", "Node.js", "PostgreSQL"],
-      missingSkills: ["Tailwind CSS", "Docker"],
-      learningRoadmap: ["Build projects with Tailwind", "Learn Docker containerization", "Learn AWS basics"],
-      suggestedProjects: ["SaaS Boilerplate", "Inventory CMS"],
-      interviewTips: ["Be ready for a live coding house", "Showcase your side projects"],
-      description: "Fast-growing AI startup looking for hungry junior developers to help scale our platform.",
-      url: "https://indeed.com"
-    },
-    {
-      id: "fb-aicte-2",
-      title: "Project Management Intern",
-      company: "TATA Projects (via AICTE portal)",
-      location: "Multiple Cities, India",
-      type: "Internship",
-      salary: "₹10,000/mo",
-      postedAt: "Active",
-      matchScore: 90,
-      skills: ["Operations", "Management", "Data Analysis"],
-      missingSkills: ["Agile/Scrum", "Jira"],
-      learningRoadmap: ["Learn Agile ceremonies", "Master Jira basics", "Practice project scheduling"],
-      suggestedProjects: ["Kanban Board Clone", "Project Resource Tracker"],
-      interviewTips: ["Be ready for behavioral STAR questions", "Show passion for construction/tech"],
-      description: "Engineering and project management internship through the AICTE Internship Portal.",
-      url: "https://internship.aicte-india.org/"
-    },
-    {
-      id: "fb-1",
-      title: "Software Engineer University Graduate",
-      company: "Google",
-      location: "Bangalore, India",
-      type: "Full-time",
-      salary: "₹20L - ₹35L",
-      postedAt: "Recent",
-      matchScore: 95,
-      skills: ["Python", "Algorithms", "DS"],
-      missingSkills: ["Go (Golang)", "GCP"],
-      learningRoadmap: ["Solve 200+ LeetCode Medium/Hard", "Learn Go fundamentals", "Deploy on GCP"],
-      suggestedProjects: ["Distributed Key-Value Store", "Search Engine Crawler"],
-      interviewTips: ["Master Big O notation", "Prepare for 4 rounds of heavy coding"],
-      description: "Build scalable software solutions for billions of users.",
-      url: "https://careers.google.com"
-    },
-    {
-      id: "fb-intern-meta",
-      title: "Frontend Engineering Intern",
-      company: "Meta",
-      location: "London / Remote",
-      type: "Internship",
-      salary: "£5,000/mo",
-      postedAt: "Active",
-      matchScore: 89,
-      skills: ["React", "JavaScript", "UI/UX"],
-      missingSkills: ["GraphQL", "Relay"],
-      learningRoadmap: ["Master React state management", "Learn GraphQL with Apollo", "Build accessible UIs"],
-      suggestedProjects: ["Social Feed Clone", "Component Library"],
-      interviewTips: ["Demonstrate strong JS fundamentals", "Be prepared for system design of a component"],
-      description: "Join the team building Facebook, Instagram, and WhatsApp.",
-      url: "https://metacareers.com"
-    },
-    {
-      id: "fb-3",
-      title: "Project Intern",
-      company: "Microsoft",
-      location: "Noida / Remote",
-      type: "Internship",
-      salary: "Stipend: ₹80k/mo",
-      postedAt: "Updated",
-      matchScore: 88,
-      skills: ["C#", "Cloud", "TypeScript"],
-      missingSkills: ["Azure Functions", "React.js"],
-      learningRoadmap: ["Build a full-stack Azure app", "Master React hooks", "Contribute to MS OSS"],
-      suggestedProjects: ["Serverless Image Optimizer", "Collaborative Code Editor"],
-      interviewTips: ["Focus on system design for scale", "Be humble and growth-minded"],
-      description: "Collaborate on cutting-edge cloud computing projects.",
-      url: "https://careers.microsoft.com"
-    }
-  ];
-
-  // Jobs Endpoint
-  app.post("/api/jobs", authenticate, async (req: any, res) => {
-    const { skills, type, query } = req.body;
+  // Jobs & Internships Endpoint
+  app.post("/api/jobs", optionalAuthenticate, async (req: any, res) => {
+    const { skills, type, query } = req.body || {};
     try {
-      const [dbUser] = await getDb().select().from(schema.users).where(eq(schema.users.id, req.user.id));
-      const userResumes = await getDb().select().from(schema.resumes).where(eq(schema.resumes.userId, req.user.id)).orderBy(desc(schema.resumes.createdAt)).limit(1);
-      const userInterviews = await getDb().select().from(schema.interviews).where(eq(schema.interviews.userId, req.user.id));
+      let dbUser: any = null;
+      let resumeScore = 0;
+      let interviewScore = 0;
 
-      const resumeScore = userResumes.length > 0 ? userResumes[0].score : 0;
-      const interviewScore = userInterviews.length > 0 
-        ? Math.round(userInterviews.reduce((acc: number, curr: any) => acc + curr.score, 0) / userInterviews.length) 
-        : 0;
+      if (req.user?.id) {
+        try {
+          const [user] = await getDb().select().from(schema.users).where(eq(schema.users.id, req.user.id));
+          dbUser = user;
+          const userResumes = await getDb().select().from(schema.resumes).where(eq(schema.resumes.userId, req.user.id)).orderBy(desc(schema.resumes.createdAt)).limit(1);
+          const userInterviews = await getDb().select().from(schema.interviews).where(eq(schema.interviews.userId, req.user.id));
 
-      const skillsContext = skills || (dbUser?.skills as string[])?.join(', ') || "Software Development";
-      const experienceContext = dbUser?.experience ? JSON.stringify(dbUser.experience) : "Entry-level / Student";
-      const educationContext = dbUser?.education ? JSON.stringify(dbUser.education) : "Not specified";
-      const targetRole = dbUser?.targetRole || "Software Developer";
-
-      const jobTypeLabel = type === 'internships' ? 'INTERNSHIPS ONLY' : type === 'jobs' ? 'FULL-TIME JOBS ONLY' : 'both jobs and internships';
-      const searchQuery = query || targetRole;
-      const specialSource = type === 'internships' ? "Focus on entry-level and internship programs suitable for their education level." : "";
-
-      const baseTitles = [
-        `Senior ${searchQuery}`,
-        `Lead ${searchQuery}`,
-        `${searchQuery} Engineer`,
-        `${searchQuery} Specialist`,
-        `Staff ${searchQuery}`,
-        `Principal ${searchQuery}`,
-        `${searchQuery} Developer`,
-        `Associate ${searchQuery}`
-      ];
-      const companies = [
-        "Google", "Microsoft", "Meta", "Amazon", "Apple", "Netflix",
-        "TCS", "Infosys", "Wipro", "Flipkart", "Zoho", "Tech Mahindra",
-        "TechFlow AI", "Innovatech", "CloudScale", "NextGen Solutions", "DataWorks"
-      ];
-      const locations = [
-        "Remote", "New York, NY", "San Francisco, CA", "Austin, TX", "London, UK",
-        "Bangalore, India", "Hyderabad, India", "Pune, India", "Toronto, ON", "Berlin, Germany", "Seattle, WA"
-      ];
-
-      const getCompanyUrl = (companyName: string, title: string) => {
-        const name = (companyName || '').toLowerCase();
-        const encodedTitle = encodeURIComponent(title || '');
-        if (name.includes("google")) return `https://www.google.com/about/careers/applications/jobs/results/?q=${encodedTitle}`;
-        if (name.includes("microsoft")) return `https://jobs.careers.microsoft.com/global/en/search?q=${encodedTitle}`;
-        if (name.includes("meta")) return `https://www.metacareers.com/jobs/?q=${encodedTitle}`;
-        if (name.includes("amazon")) return `https://www.amazon.jobs/en/search?base_query=${encodedTitle}`;
-        if (name.includes("apple")) return `https://jobs.apple.com/en-us/search?search=${encodedTitle}`;
-        if (name.includes("netflix")) return `https://jobs.netflix.com/search?q=${encodedTitle}`;
-        if (name.includes("tcs")) return `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent("TCS " + title)}`;
-        if (name.includes("infosys")) return `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent("Infosys " + title)}`;
-        if (name.includes("wipro")) return `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent("Wipro " + title)}`;
-        if (name.includes("flipkart")) return `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent("Flipkart " + title)}`;
-        if (name.includes("zoho")) return `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent("Zoho " + title)}`;
-        if (name.includes("mahindra")) return `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent("Tech Mahindra " + title)}`;
-        
-        return `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(companyName + ' ' + title)}`;
-      };
-
-      // Generate robust mock data dynamically instead of relying on external Adzuna API
-      let rawAdzunaJobs = Array.from({ length: 25 }).map((_, i) => ({
-        id: Math.random().toString(),
-        title: baseTitles[i % baseTitles.length],
-        company: { display_name: companies[i % companies.length] },
-        location: { display_name: locations[i % locations.length] },
-        contract_time: type === 'internships' ? 'Internship' : 'Full-time',
-        salary_min: type === 'internships' ? 40000 : 80000 + (i * 3000),
-        salary_max: type === 'internships' ? 60000 : 120000 + (i * 3000),
-        created: `${(i % 14) + 1} days ago`,
-        description: `Exciting opportunity to join our growing team as a ${baseTitles[i % baseTitles.length]}. You will be working on cutting-edge technologies to deliver high-impact solutions and shape the future of our product ecosystem.`
-      }));
-
-      let jobsContextString = "";
-
-      const prompt = `SEARCH AND ANALYZE JOBS. 
-      Target Role/Query: "${searchQuery}".
-      Job Type: ${jobTypeLabel}
-      Current Time: ${new Date().toISOString()} (Use this to ensure fresh, varied results).
-      
-      CRITICAL: You MUST ONLY return jobs that perfectly match the Target Role/Query "${searchQuery}". Do not include unrelated jobs.
-      
-      User Profile Context:
-      - Experience: ${experienceContext}
-      - Education: ${educationContext}
-      - Skills: ${skillsContext}
-      - Resume Score: ${resumeScore}/100
-      - Interview Readiness: ${interviewScore}/100
-      - Target Goal: ${targetRole}
-      
-      ${jobsContextString ? `Analyze these exact jobs fetched from Adzuna API against the user profile:\n${jobsContextString}` : `Find 6 REAL active, distinct ${jobTypeLabel} globally matching these skills.`}
-      
-      Rank and filter the jobs based on this exact user profile. Recommend jobs where they have a high chance of success.
-      Calculate Match Score exactly as (Matching Skills / Required Skills) * 100.
-      
-      CRITICAL URL RULE: You MUST use your googleSearch tool to find the DIRECT company careers page URL for the application. DO NOT return the Adzuna redirect URL.
-      
-      Return ONLY a JSON object with this EXACT structure:
-      {
-        "analysis": "A personalized 2-3 sentence analysis of why these jobs fit their specific profile (experience, education, resume score).",
-        "avgSkillMatchScore": integer 0-100,
-        "jobs": [
-          {
-            "id": "unique string",
-            "title": "real job title",
-            "company": "real company name",
-            "location": "city/remote",
-            "type": "Full-time" or "Internship",
-            "salary": "estimated or listed range",
-            "postedAt": "e.g., 2 days ago",
-            "matchScore": integer 0-100 indicating readiness,
-            "whyRecommended": "1 short sentence explaining why this specific job is perfect for THEIR profile.",
-            "skills": ["array of 4 key required skills"],
-            "missingSkills": ["array of 2-3 skills user needs to learn for this role"],
-            "learningRoadmap": ["array of 3 specific steps to become ready"],
-            "suggestedProjects": ["array of 2 mini-project ideas"],
-            "interviewTips": ["array of 2 specific technical tips"],
-            "description": "short summary",
-            "url": "direct link to listing",
-            "eligibilityStatus": "High" | "Medium" | "Low"
-          }
-        ]
-      }`;
-
-      const dynamicFallbackJobs = rawAdzunaJobs.length > 0 ? rawAdzunaJobs.slice(0, 6).map((j: any) => {
-        const jobTitle = (j.title || 'Tech Role').toLowerCase();
-        const baseSkills = jobTitle.includes('frontend') || jobTitle.includes('ui') || jobTitle.includes('react') ? ['React', 'JavaScript', 'UI/UX'] :
-                           jobTitle.includes('backend') || jobTitle.includes('node') || jobTitle.includes('java') ? ['API Design', 'System Architecture', 'Database'] :
-                           jobTitle.includes('data') || jobTitle.includes('machine') ? ['Python', 'SQL', 'Data Modeling'] :
-                           jobTitle.includes('design') ? ['Figma', 'User Research', 'Prototyping'] :
-                           ['System Architecture', 'Problem Solving', 'Communication', 'Agile'];
-        
-        const missing = jobTitle.includes('frontend') ? ['Advanced State Management', 'Web Performance'] :
-                        jobTitle.includes('backend') ? ['Microservices', 'Docker/K8s'] :
-                        jobTitle.includes('data') ? ['Cloud Data Warehouses', 'Pipeline Orchestration'] :
-                        ['Cloud Infrastructure', 'Advanced CI/CD'];
-
-        const roadmap = [
-          `Master the core fundamentals of ${j.title || 'this specific domain'}`,
-          `Build 2-3 advanced projects matching the ${j.company?.display_name || 'company'} tech stack`,
-          `Prepare for standard industry behavioral and system design interviews`
-        ];
-
-        const projects = [
-          `Clone a major application feature related to ${j.title || 'this role'}`,
-          `Contribute to an open-source project in this ecosystem`
-        ];
-
-        const tips = [
-          `Research ${j.company?.display_name || 'the company'}'s recent engineering blogs or product releases`,
-          `Be prepared to explain your past project decisions in depth using the STAR method`
-        ];
-
-        return {
-          id: j.id || Math.random().toString(),
-          title: j.title || 'Unknown Role',
-          company: j.company?.display_name || 'Unknown Company',
-          location: j.location?.display_name || 'Remote',
-          type: (j.contract_time || 'Full-time') as any,
-          salary: j.salary_min ? `${Math.round(j.salary_min)} - ${Math.round(j.salary_max)}` : 'Competitive',
-          postedAt: j.created || 'Recently',
-          matchScore: Math.floor(Math.random() * (98 - 85) + 85),
-          whyRecommended: "This role matches your core competencies and offers strong growth potential.",
-          skills: baseSkills,
-          missingSkills: missing,
-          learningRoadmap: roadmap,
-          suggestedProjects: projects,
-          interviewTips: tips,
-          description: j.description || '',
-          url: getCompanyUrl(j.company?.display_name || 'tech', j.title || ''),
-          eligibilityStatus: "Medium"
-        };
-      }) : FALLBACK_JOBS.map(j => ({
-            ...j,
-            matchScore: Math.floor(Math.random() * (98 - 85) + 85),
-            whyRecommended: "This role matches your core competencies and offers strong growth potential.",
-            eligibilityStatus: "Medium"
-      }));
-
-      const response = await generateAIContent({
-        contents: prompt,
-        tools: [{ googleSearch: {} }],
-        useCache: false,
-        fallback: {
-          analysis: "Based on your current skill set, you are tracking well towards your target role. Continue building your portfolio to maximize opportunities.",
-          avgSkillMatchScore: 85,
-          jobs: dynamicFallbackJobs
+          resumeScore = userResumes.length > 0 ? userResumes[0].score : 0;
+          interviewScore = userInterviews.length > 0 
+            ? Math.round(userInterviews.reduce((acc: number, curr: any) => acc + curr.score, 0) / userInterviews.length) 
+            : 0;
+        } catch (dbErr) {
+          console.warn("[/api/jobs] Could not fetch user metrics from DB:", dbErr);
         }
-      });
+      }
 
-      let text = response.text || "{}";
-      let result: any = { analysis: "", avgSkillMatchScore: 85, jobs: [] };
+      const skillsContext = skills || dbUser?.skills || "Software Development";
+      const targetRole = query || dbUser?.targetRole || "Software Developer";
+      const filterType: 'all' | 'jobs' | 'internships' = 
+        type === 'internships' ? 'internships' : type === 'jobs' ? 'jobs' : 'all';
 
+      // 1. Instant baseline personalization from comprehensive Master Catalog
+      const personalized = rankAndPersonalizeOpportunities(
+        skillsContext,
+        targetRole,
+        filterType,
+        query || '',
+        resumeScore,
+        interviewScore
+      );
+
+      let finalAnalysis = personalized.analysis;
+      let finalJobs = personalized.recommended;
+      let isFallback = false;
+
+      // 2. Snappy AI Enhancement with strict 3.5-second timeout (NO googleSearch tool to prevent 429 quota exhaustion)
       try {
-        const parsed = JSON.parse(text.trim());
-        if (Array.isArray(parsed)) {
-          result.jobs = parsed;
-        } else {
-          result = parsed;
+        const aiPromise = (async () => {
+          const jobTypeLabel = filterType === 'internships' ? 'INTERNSHIPS ONLY' : filterType === 'jobs' ? 'FULL-TIME JOBS ONLY' : 'both jobs and internships';
+          const prompt = `You are an elite Career Matching AI.
+Search Query/Role: "${targetRole}"
+Job Type Filter: ${jobTypeLabel}
+User Skills: ${Array.isArray(skillsContext) ? JSON.stringify(skillsContext) : skillsContext}
+User Target: ${targetRole}
+
+Provide a 2-sentence personalized readiness analysis for this user in technical roles.
+Also provide 2 highly specific new job or internship opportunities matching "${targetRole}" and "${jobTypeLabel}".
+
+Return ONLY a valid JSON object:
+{
+  "analysis": "2 sentences analyzing user readiness and high-demand skills for ${targetRole}",
+  "extraJobs": [
+    {
+      "id": "ai-role-1",
+      "title": "${targetRole} ${filterType === 'internships' ? 'Intern' : 'Engineer'}",
+      "company": "Top Tech Innovator",
+      "location": "Remote / Hybrid",
+      "type": "${filterType === 'internships' ? 'Internship' : 'Full-time'}",
+      "salary": "${filterType === 'internships' ? '$6,000/mo' : '$110,000 - $140,000'}",
+      "postedAt": "1 day ago",
+      "matchScore": 92,
+      "whyRecommended": "Directly matches your target focus in ${targetRole}.",
+      "skills": ["Python", "TypeScript", "System Design", "Cloud"],
+      "missingSkills": ["Microservices", "CI/CD"],
+      "learningRoadmap": ["Master core fundamentals of ${targetRole}", "Build production portfolio", "Practice technical interview rounds"],
+      "suggestedProjects": ["Full-Stack App clone", "Open source contribution"],
+      "interviewTips": ["Review core CS fundamentals", "Use STAR method for behavioral"],
+      "description": "Work on cutting edge systems and deliver high performance software solutions.",
+      "url": "https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(targetRole)}",
+      "eligibilityStatus": "High"
+    }
+  ]
+}`;
+
+          // Use snappy flash-lite model without tools
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: prompt,
+            config: { maxOutputTokens: 1000 }
+          });
+
+          const text = response.text || "";
+          const jsonMatch = text.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+          }
+          return null;
+        })();
+
+        // Timeout race in 3.5 seconds so user never waits
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("AI_TIMEOUT")), 3500));
+        const aiResult: any = await Promise.race([aiPromise, timeoutPromise]);
+
+        if (aiResult) {
+          if (aiResult.analysis && typeof aiResult.analysis === 'string') {
+            finalAnalysis = aiResult.analysis;
+          }
+          if (Array.isArray(aiResult.extraJobs) && aiResult.extraJobs.length > 0) {
+            const validExtra = aiResult.extraJobs.filter((j: any) => {
+              if (filterType === 'internships') return j.type === 'Internship';
+              if (filterType === 'jobs') return j.type !== 'Internship';
+              return true;
+            });
+            if (validExtra.length > 0) {
+              finalJobs = [...validExtra, ...personalized.recommended.slice(0, 18)];
+            }
+          }
         }
-      } catch (parseErr) {
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          result = JSON.parse(jsonMatch[0]);
-        } else if (response.isFallback) {
-          result = JSON.parse(response.text);
-        } else {
-          throw new Error("Could not parse AI response as JSON");
-        }
+      } catch (aiErr: any) {
+        // Snappy fallback: perfectly fine if AI timed out or rate limited
+        isFallback = true;
       }
 
-      let jobs = result.jobs || [];
-
-      // Filter jobs based on type if it was a real AI response that might have mixed results
-      if (type === 'internships') {
-        jobs = jobs.filter((j: any) => j.type === 'Internship' || (j.title && j.title.toLowerCase().includes('intern')));
-      } else if (type === 'jobs') {
-        jobs = jobs.filter((j: any) => j.type !== 'Internship' && !(j.title && j.title.toLowerCase().includes('intern')));
-      }
-
-      const recommendedTitles = new Set(jobs.map((j: any) => (j.title || '').toLowerCase().trim()));
-
-      const careerReadinessScore = Math.round((resumeScore + interviewScore + (result.avgSkillMatchScore || 85)) / 3);
-
-      const defaultJobs = rawAdzunaJobs
-        .filter((j: any) => !recommendedTitles.has((j.title || '').toLowerCase().trim()))
-        .map((j: any) => {
-          const jobTitle = (j.title || 'Tech Role').toLowerCase();
-          const baseSkills = jobTitle.includes('frontend') || jobTitle.includes('ui') || jobTitle.includes('react') ? ['React', 'JavaScript', 'UI/UX'] :
-                             jobTitle.includes('backend') || jobTitle.includes('node') || jobTitle.includes('java') ? ['API Design', 'System Architecture', 'Database'] :
-                             jobTitle.includes('data') || jobTitle.includes('machine') ? ['Python', 'SQL', 'Data Modeling'] :
-                             jobTitle.includes('design') ? ['Figma', 'User Research', 'Prototyping'] :
-                             ['System Architecture', 'Problem Solving', 'Communication', 'Agile'];
-          
-          const missing = jobTitle.includes('frontend') ? ['Advanced State Management', 'Web Performance'] :
-                          jobTitle.includes('backend') ? ['Microservices', 'Docker/K8s'] :
-                          jobTitle.includes('data') ? ['Cloud Data Warehouses', 'Pipeline Orchestration'] :
-                          ['Cloud Infrastructure', 'Advanced CI/CD'];
-
-          const roadmap = [
-            `Master the core fundamentals of ${j.title || 'this specific domain'}`,
-            `Build 2-3 advanced projects matching the ${j.company?.display_name || 'company'} tech stack`,
-            `Prepare for standard industry behavioral and system design interviews`
-          ];
-
-          const projects = [
-            `Clone a major application feature related to ${j.title || 'this role'}`,
-            `Contribute to an open-source project in this ecosystem`
-          ];
-
-          const tips = [
-            `Research ${j.company?.display_name || 'the company'}'s recent engineering blogs or product releases`,
-            `Be prepared to explain your past project decisions in depth using the STAR method`
-          ];
-
-          return {
-            id: j.id || Math.random().toString(),
-            title: j.title || 'Unknown Role',
-            company: j.company?.display_name || 'Unknown Company',
-            location: j.location?.display_name || 'Remote',
-            type: (j.contract_time || 'Full-time') as any,
-            salary: j.salary_min ? `${Math.round(j.salary_min)} - ${Math.round(j.salary_max)}` : 'Competitive',
-            postedAt: j.created || 'Recently',
-            matchScore: Math.floor(Math.random() * (95 - 65) + 65),
-            skills: baseSkills,
-            missingSkills: missing,
-            learningRoadmap: roadmap,
-            suggestedProjects: projects,
-            interviewTips: tips,
-            description: j.description || '',
-            url: getCompanyUrl(j.company?.display_name || 'tech', j.title || '')
-          };
-        });
-
-      res.json({ 
-        analysis: result.analysis, 
-        jobs, 
-        defaultJobs,
-        fallback: response.isFallback,
-        scores: {
-          resumeScore,
-          interviewScore,
-          skillMatchScore: result.avgSkillMatchScore || 85,
-          careerReadinessScore
-        }
+      res.json({
+        analysis: finalAnalysis,
+        jobs: finalJobs,
+        defaultJobs: personalized.defaultJobs,
+        fallback: isFallback,
+        scores: personalized.scores
       });
     } catch (err: any) {
       console.error("Jobs fetch error:", err);
-      res.status(500).json({ error: "Failed to fetch real-time jobs", details: err.message });
+      const fallbackData = rankAndPersonalizeOpportunities([], "Software Developer", "all", "", 0, 0);
+      res.json({
+        analysis: fallbackData.analysis,
+        jobs: fallbackData.recommended,
+        defaultJobs: fallbackData.defaultJobs,
+        fallback: true,
+        scores: fallbackData.scores
+      });
     }
   });
 
