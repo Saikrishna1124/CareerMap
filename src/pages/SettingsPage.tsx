@@ -7,7 +7,6 @@ import {
   Database, UserCheck
 } from 'lucide-react';
 import { useTheme, THEMES } from '../context/ThemeContext';
-import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth } from '../context/AuthContext';
 
 export const SettingsPage: React.FC = () => {
@@ -318,15 +317,26 @@ export const SettingsPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* FLAGSHIP THEME SELECTOR */}
-                <div className="space-y-3 p-5 rounded-2xl bg-warm-bg/50 dark:bg-stone-950/60 border border-warm-border dark:border-stone-800">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <h4 className="font-bold text-warm-text dark:text-stone-100 text-sm">Flagship CareerMap Themes</h4>
-                      <p className="text-xs text-warm-secondary dark:text-stone-400">Our two signature designed experiences: Executive Light and Midnight Obsidian.</p>
-                    </div>
+                {/* THEME QUICK TOGGLE */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 dark:bg-slate-950/50 rounded-2xl border border-slate-100 dark:border-slate-800/80 gap-4">
+                  <div>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Theme Mode</h4>
+                    <p className="text-xs text-slate-500">Instantly switch between light and premium dark mode.</p>
                   </div>
-                  <ThemeToggle variant="expanded" />
+                  <button
+                    onClick={() => {
+                      if (theme === 'dark') {
+                        setTheme('light');
+                      } else {
+                        setTheme('dark');
+                      }
+                    }}
+                    id="theme-quick-btn"
+                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-indigo-500 transition-all font-bold text-xs justify-center cursor-pointer select-none"
+                  >
+                    {theme === 'dark' ? <Sun size={15} className="text-amber-500" /> : <Moon size={15} className="text-indigo-600" />}
+                    {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
+                  </button>
                 </div>
 
                 {/* THEME CARDS SELECTOR GRID */}
@@ -334,7 +344,7 @@ export const SettingsPage: React.FC = () => {
                   {/* Light Themes Divider */}
                   <div className="flex items-center gap-4 py-2">
                     <div className="h-px bg-slate-200 dark:bg-slate-800/80 flex-1"></div>
-                    <span className="text-xs font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 select-none">Light Themes Collection</span>
+                    <span className="text-xs font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 select-none">Light Themes</span>
                     <div className="h-px bg-slate-200 dark:bg-slate-800/80 flex-1"></div>
                   </div>
 
@@ -344,7 +354,6 @@ export const SettingsPage: React.FC = () => {
                       const isSelected = activeDarkTheme === t.id;
                       const getThemeEmoji = (themeId: string) => {
                         switch (themeId) {
-                          case 'careermap-light': return '🏛️';
                           case 'warm-slate': return '☀️';
                           case 'teal-mint-light': return '🌱';
                           case 'emerald-champagne': return '🌿';
@@ -418,7 +427,6 @@ export const SettingsPage: React.FC = () => {
                       const isSelected = activeDarkTheme === t.id;
                       const getThemeEmoji = (themeId: string) => {
                         switch (themeId) {
-                          case 'careermap-dark': return '🌌';
                           case 'obsidian-warm': return '🌑';
                           default: return '✨';
                         }

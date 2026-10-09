@@ -101,10 +101,10 @@ export const GlobalChatbot: React.FC = () => {
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="mb-4 w-80 sm:w-96 h-[500px] bg-white/95 dark:bg-stone-900/95 backdrop-blur-xl border border-warm-border dark:border-stone-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+              className="mb-4 w-80 sm:w-96 h-[500px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             >
               <div 
-                className="p-4 bg-gradient-to-r from-indigo-600 to-purple-700 dark:from-indigo-950 dark:to-stone-900 text-white flex justify-between items-center cursor-grab active:cursor-grabbing select-none shrink-0 border-b border-indigo-500/20"
+                className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white flex justify-between items-center cursor-grab active:cursor-grabbing select-none shrink-0"
               >
                 <div className="flex items-center gap-2">
                   <div 
@@ -118,14 +118,14 @@ export const GlobalChatbot: React.FC = () => {
                       className="w-full h-full object-contain"
                     />
                   </div>
-                  <span className="font-bold text-sm tracking-tight select-none">CareerMap AI Advisor</span>
+                  <span className="font-semibold select-none">CareerMap AI</span>
                 </div>
                 <button 
                   onClick={() => setIsOpen(false)} 
                   onPointerDown={(e) => e.stopPropagation()}
-                  className="hover:bg-white/20 p-1 rounded-lg transition-colors"
+                  className="hover:bg-white/20 p-1 rounded"
                 >
-                  <X size={18} />
+                  <X size={20} />
                 </button>
               </div>
 
@@ -138,7 +138,7 @@ export const GlobalChatbot: React.FC = () => {
                   {messages?.map((msg, i) => (
                     <div key={i} className={`flex items-start gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       {msg.role === 'ai' && (
-                        <div className="w-8 h-8 rounded-full bg-white dark:bg-stone-800 border border-warm-border dark:border-stone-700 flex items-center justify-center p-1 shrink-0 shadow-sm">
+                        <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1 shrink-0 shadow-sm">
                           <img 
                             src="https://cdn-icons-png.flaticon.com/128/4712/4712027.png" 
                             alt="AI Assistant" 
@@ -148,8 +148,8 @@ export const GlobalChatbot: React.FC = () => {
                       )}
                       <div className={`max-w-[75%] p-3.5 rounded-2xl text-sm leading-normal whitespace-pre-wrap ${
                         msg.role === 'user' 
-                          ? 'bg-brand-purple text-white rounded-tr-none shadow-sm' 
-                          : 'bg-stone-100 dark:bg-stone-800/90 text-warm-text dark:text-stone-100 rounded-tl-none border border-warm-border/60 dark:border-stone-700/60'
+                          ? 'bg-blue-600 text-white rounded-tr-none' 
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none'
                       }`}>
                         {msg.role === 'user' ? (
                           msg.text
@@ -211,7 +211,7 @@ export const GlobalChatbot: React.FC = () => {
                   )}
                 </div>
 
-                <div className="p-4 border-t border-warm-border dark:border-stone-800 flex gap-2">
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex gap-2">
                   <input
                     type="text"
                     value={input}
@@ -222,15 +222,14 @@ export const GlobalChatbot: React.FC = () => {
                         handleSend();
                       }
                     }}
-                    placeholder="Ask anything about your career..."
-                    className="flex-1 bg-warm-bg dark:bg-stone-950 text-warm-text dark:text-stone-100 border border-warm-border dark:border-stone-800 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-brand-purple outline-none transition-all placeholder:text-warm-hint"
+                    placeholder="Ask anything..."
+                    className="flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                   <button
                     onClick={handleSend}
-                    className="bg-brand-purple text-white p-2.5 rounded-full hover:opacity-90 transition-opacity shadow-md shadow-brand-purple/25 flex items-center justify-center cursor-pointer"
-                    title="Send message"
+                    className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors"
                   >
-                    <Send size={16} />
+                    <Send size={18} />
                   </button>
                 </div>
               </div>
@@ -255,8 +254,7 @@ export const GlobalChatbot: React.FC = () => {
               }, 250);
             }
           }}
-          className="bg-brand-purple text-white p-3.5 rounded-full shadow-xl shadow-brand-purple/35 flex items-center justify-center w-14 h-14 cursor-grab active:cursor-grabbing border border-white/20"
-          title="CareerMap AI Chatbot"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3.5 rounded-full shadow-lg flex items-center justify-center w-14 h-14 cursor-grab active:cursor-grabbing"
         >
           {isOpen ? (
             <X size={24} />

@@ -13,109 +13,10 @@ export interface ThemeConfig {
 }
 
 export const THEMES: ThemeConfig[] = [
-  // =========================================================================
-  // FLAGSHIP THEMES: 1. PREMIUM DARK & 2. PREMIUM LIGHT
-  // =========================================================================
-  {
-    id: 'careermap-dark',
-    name: 'Midnight Obsidian',
-    description: 'Flagship executive dark theme. Deep midnight slate canvas with crystalline surfaces, luminous AI indigo accents, and zero-fatigue readability.',
-    feel: 'Midnight Obsidian (Flagship Dark)',
-    isDark: true,
-    colors: ['#0B0F17', '#131926', '#6366F1', '#10B981'],
-    variables: {
-      '--bg-base': '#0B0F17',
-      '--bg-main': '#0F1420',
-      '--bg-sidebar': '#090D15',
-      '--bg-card': '#131926',
-      '--bg-raised': '#1A2234',
-
-      '--border-subtle': '#1E2738',
-      '--border-default': '#2A364E',
-      '--border-focus': '#6366F1',
-
-      '--accent-primary': '#6366F1',
-      '--accent-glow': 'rgba(99, 102, 241, 0.25)',
-      '--accent-soft-surface': 'rgba(99, 102, 241, 0.12)',
-      '--accent-cyan': '#06B6D4',
-      '--accent-cyan-soft': 'rgba(6, 182, 212, 0.12)',
-      '--accent-amber': '#F59E0B',
-      '--accent-amber-soft': 'rgba(245, 158, 11, 0.12)',
-
-      '--text-primary': '#F8FAFC',
-      '--text-secondary': '#94A3B8',
-      '--text-muted': '#64748B',
-      '--text-link': '#818CF8',
-
-      '--status-success': '#10B981',
-      '--status-success-bg': 'rgba(16, 185, 129, 0.12)',
-      '--status-warning': '#F59E0B',
-      '--status-warning-bg': 'rgba(245, 158, 11, 0.12)',
-      '--status-error': '#EF4444',
-      '--status-error-bg': 'rgba(239, 68, 68, 0.12)',
-      '--status-info': '#3B82F6',
-      '--status-info-bg': 'rgba(59, 130, 246, 0.12)',
-
-      '--chart-grid': 'rgba(255, 255, 255, 0.08)',
-      '--chart-tooltip-bg': '#1A2234',
-      '--chart-tooltip-text': '#F8FAFC',
-      '--chart-tooltip-border': '#2A364E',
-    }
-  },
-  {
-    id: 'careermap-light',
-    name: 'Executive Ivory',
-    description: 'Flagship executive light theme. Warm porcelain canvas, crisp optic cards, deep slate typography, and authoritative royal indigo accents.',
-    feel: 'Executive Ivory (Flagship Light)',
-    isDark: false,
-    colors: ['#F8FAFC', '#FFFFFF', '#4F46E5', '#059669'],
-    variables: {
-      '--bg-base': '#F8FAFC',
-      '--bg-main': '#FFFFFF',
-      '--bg-sidebar': '#F1F5F9',
-      '--bg-card': '#FFFFFF',
-      '--bg-raised': '#FFFFFF',
-
-      '--border-subtle': '#E2E8F0',
-      '--border-default': '#CBD5E1',
-      '--border-focus': '#4F46E5',
-
-      '--accent-primary': '#4F46E5',
-      '--accent-glow': 'rgba(79, 70, 229, 0.18)',
-      '--accent-soft-surface': '#EEF2FF',
-      '--accent-cyan': '#0284C7',
-      '--accent-cyan-soft': '#E0F2FE',
-      '--accent-amber': '#D97706',
-      '--accent-amber-soft': '#FEF3C7',
-
-      '--text-primary': '#0F172A',
-      '--text-secondary': '#475569',
-      '--text-muted': '#94A3B8',
-      '--text-link': '#4F46E5',
-
-      '--status-success': '#059669',
-      '--status-success-bg': '#ECFDF5',
-      '--status-warning': '#D97706',
-      '--status-warning-bg': '#FFFBEB',
-      '--status-error': '#DC2626',
-      '--status-error-bg': '#FEF2F2',
-      '--status-info': '#2563EB',
-      '--status-info-bg': '#EFF6FF',
-
-      '--chart-grid': '#E2E8F0',
-      '--chart-tooltip-bg': '#FFFFFF',
-      '--chart-tooltip-text': '#0F172A',
-      '--chart-tooltip-border': '#CBD5E1',
-    }
-  },
-
-  // =========================================================================
-  // ADDITIONAL PRESERVED THEMES
-  // =========================================================================
   {
     id: 'warm-slate',
     name: 'Warm Slate',
-    description: 'Our classic balanced light theme. Gentle cream surfaces and rich slate text.',
+    description: 'Our default balanced light theme. Gentle cream surfaces and rich slate text.',
     feel: 'Warm Slate',
     isDark: false,
     colors: ['#F6F2EC', '#EDEAE3', '#DDD5C8', '#4F378B'],
@@ -151,11 +52,6 @@ export const THEMES: ThemeConfig[] = [
       '--status-error-bg': '#FEE2E2',
       '--status-info': '#2563EB',
       '--status-info-bg': '#DBEAFE',
-
-      '--chart-grid': '#DDD5C8',
-      '--chart-tooltip-bg': '#FFFFFF',
-      '--chart-tooltip-text': '#1C1917',
-      '--chart-tooltip-border': '#DDD5C8',
     }
   },
   {
@@ -197,11 +93,6 @@ export const THEMES: ThemeConfig[] = [
       '--status-error-bg': '#2D1015',
       '--status-info': '#60A5FA',
       '--status-info-bg': '#0C2340',
-
-      '--chart-grid': '#272320',
-      '--chart-tooltip-bg': '#232018',
-      '--chart-tooltip-text': '#F2EDE6',
-      '--chart-tooltip-border': '#322E28',
     }
   },
   {
@@ -243,11 +134,6 @@ export const THEMES: ThemeConfig[] = [
       '--status-error-bg': '#FFEBEE',
       '--status-info': '#00897B',
       '--status-info-bg': '#E0F2F1',
-
-      '--chart-grid': '#B2DFDB',
-      '--chart-tooltip-bg': '#FFFFFF',
-      '--chart-tooltip-text': '#004D40',
-      '--chart-tooltip-border': '#80CBC4',
     }
   },
   {
@@ -289,11 +175,6 @@ export const THEMES: ThemeConfig[] = [
       '--status-error-bg': '#FEE2E2',
       '--status-info': '#0284C7',
       '--status-info-bg': '#E0F2FE',
-
-      '--chart-grid': '#E8D5B5',
-      '--chart-tooltip-bg': '#FFFFFF',
-      '--chart-tooltip-text': '#064E3B',
-      '--chart-tooltip-border': '#E8D5B5',
     }
   },
   {
@@ -335,11 +216,6 @@ export const THEMES: ThemeConfig[] = [
       '--status-error-bg': '#FEE2E2',
       '--status-info': '#2563EB',
       '--status-info-bg': '#DBEAFE',
-
-      '--chart-grid': '#F5DEB0',
-      '--chart-tooltip-bg': '#FFFFFF',
-      '--chart-tooltip-text': '#291507',
-      '--chart-tooltip-border': '#F5DEB0',
     }
   }
 ];
@@ -352,8 +228,6 @@ interface ThemeContextType {
   toggleContrastMode: () => void;
   activeDarkTheme: string;
   selectDarkTheme: (themeId: string) => void;
-  isDark: boolean;
-  currentThemeConfig: ThemeConfig;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -362,8 +236,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem('theme');
     if (saved === 'light' || saved === 'dark') return saved;
-    const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return prefersDark ? 'dark' : 'light';
+    return 'light';
   });
 
   const [contrastMode, setContrastMode] = useState<boolean>(() => {
@@ -372,14 +245,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [activeDarkTheme, setActiveDarkTheme] = useState<string>(() => {
     const saved = localStorage.getItem('careermap-theme');
-    // If user has a valid saved theme, use it
-    if (saved && THEMES.some(t => t.id === saved)) return saved;
-    // Otherwise fallback based on saved theme mode or system preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') return 'careermap-dark';
-    if (savedTheme === 'light') return 'careermap-light';
-    const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return prefersDark ? 'careermap-dark' : 'careermap-light';
+    if (saved === 'crimson-dusk' || saved === 'cyber-pastel' || saved === 'bento-grid-dark') return 'obsidian-warm';
+    if (
+      saved === 'emerald-forest' ||
+      saved === 'midnight-ocean' ||
+      saved === 'sunset-glow' ||
+      saved === 'mint-rose' ||
+      saved === 'mint-rose-light' ||
+      saved === 'ocean-breeze-light' ||
+      saved === 'nordic-glacier-light'
+    )
+      return 'teal-mint-light';
+    return saved || 'obsidian-warm';
   });
 
   // Inject variables to documentElement
@@ -420,17 +297,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const toggleTheme = () => {
     const config = THEMES.find(t => t.id === activeDarkTheme);
     if (config?.isDark) {
-      selectDarkTheme('careermap-light');
+      selectDarkTheme('warm-slate');
     } else {
-      selectDarkTheme('careermap-dark');
+      selectDarkTheme('obsidian-warm');
     }
   };
 
   const setTheme = (t: Theme) => {
     if (t === 'light') {
-      selectDarkTheme('careermap-light');
+      selectDarkTheme('warm-slate');
     } else {
-      selectDarkTheme('careermap-dark');
+      selectDarkTheme('obsidian-warm');
     }
   };
 
@@ -455,8 +332,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setContrastMode(prev => !prev);
   };
 
-  const currentThemeConfig = THEMES.find(t => t.id === activeDarkTheme) || THEMES[0];
-
   return (
     <ThemeContext.Provider value={{
       theme,
@@ -465,9 +340,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       contrastMode,
       toggleContrastMode,
       activeDarkTheme,
-      selectDarkTheme,
-      isDark: theme === 'dark',
-      currentThemeConfig
+      selectDarkTheme
     }}>
       {children}
     </ThemeContext.Provider>

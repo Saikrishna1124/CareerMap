@@ -500,26 +500,26 @@ export const Dashboard: React.FC = () => {
               <div className="h-[120px] w-full mt-2 min-w-0 min-h-0">
                 <ResponsiveContainer width="100%" height={120}>
                   <LineChart data={growthData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle, #e0e0e0)" className="opacity-40" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" className="opacity-30 dark:opacity-10" />
                     <XAxis
                       dataKey="name"
-                      tick={{ fill: 'var(--text-secondary, #78716C)', fontSize: 9, fontWeight: 700 }}
+                      tick={{ fill: '#78716C', fontSize: 9, fontWeight: 700 }}
                       axisLine={false}
                       tickLine={false}
                     />
                     <YAxis
                       domain={[0, 100]}
-                      tick={{ fill: 'var(--text-secondary, #78716C)', fontSize: 9, fontWeight: 700 }}
+                      tick={{ fill: '#78716C', fontSize: 9, fontWeight: 700 }}
                       axisLine={false}
                       tickLine={false}
                     />
                     <Tooltip
                       contentStyle={{
                         borderRadius: '12px',
-                        border: '1px solid var(--border-default, #DDD5C8)',
-                        boxShadow: '0 8px 16px -4px rgb(0 0 0 / 0.15)',
-                        background: 'var(--chart-tooltip-bg, #FFFFFF)',
-                        color: 'var(--chart-tooltip-text, #1C1917)',
+                        border: '1px solid #DDD5C8',
+                        boxShadow: '0 8px 16px -4px rgb(0 0 0 / 0.1)',
+                        background: '#FFFFFF',
+                        color: '#1C1917',
                         fontSize: '11px',
                         fontWeight: 'bold'
                       }}
@@ -535,9 +535,9 @@ export const Dashboard: React.FC = () => {
                     <Line
                       type="monotone"
                       dataKey="skills"
-                      stroke="var(--accent-primary, #6366F1)"
+                      stroke="#4F378B"
                       strokeWidth={3}
-                      dot={{ r: 4, fill: 'var(--accent-primary, #6366F1)', strokeWidth: 1 }}
+                      dot={{ r: 4, fill: '#4F378B', strokeWidth: 1 }}
                       activeDot={{ r: 6 }}
                     />
                   </LineChart>
@@ -568,32 +568,26 @@ export const Dashboard: React.FC = () => {
             <div className="h-[400px] w-full min-w-0 min-h-0">
               <ResponsiveContainer width="100%" height={400}>
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillData}>
-                  <PolarGrid stroke="var(--border-subtle, #DDD5C8)" className="opacity-50 dark:opacity-25" />
-                  <PolarAngleAxis dataKey="name" tick={{ fill: 'var(--text-secondary, #78716C)', fontSize: 11, fontWeight: 700 }} />
+                  <PolarGrid stroke="#DDD5C8" className="opacity-50 dark:opacity-20" />
+                  <PolarAngleAxis dataKey="name" tick={{ fill: '#78716C', fontSize: 11, fontWeight: 700 }} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                   <Radar
                     name="Your Level"
                     dataKey="current"
-                    stroke="var(--accent-primary, #6366F1)"
-                    fill="var(--accent-primary, #6366F1)"
+                    stroke="#4F378B"
+                    fill="#4F378B"
                     fillOpacity={0.25}
                   />
                   <Radar
                     name="Industry Standard"
                     dataKey="standard"
-                    stroke="var(--status-success, #10B981)"
-                    fill="var(--status-success, #10B981)"
+                    stroke="#10B981"
+                    fill="#10B981"
                     fillOpacity={0.12}
                     strokeDasharray="4 4"
                   />
                   <Tooltip
-                    contentStyle={{
-                      borderRadius: '16px',
-                      border: '1px solid var(--border-default, #DDD5C8)',
-                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.15)',
-                      background: 'var(--chart-tooltip-bg, #FFFFFF)',
-                      color: 'var(--chart-tooltip-text, #1C1917)'
-                    }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #DDD5C8', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', background: '#FFFFFF', color: '#1C1917' }}
                   />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: 'bold' }} />
                 </RadarChart>

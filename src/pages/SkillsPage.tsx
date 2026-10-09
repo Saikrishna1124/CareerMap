@@ -624,25 +624,25 @@ export const SkillsPage: React.FC = () => {
                       requiredPct: Math.round((g.required / 10) * 100),
                       gapPct: Math.max(0, Math.round(((g.required - g.current) / 10) * 100))
                     }))}>
-                      <PolarGrid stroke="var(--border-subtle, #DDD5C8)" className="opacity-50 dark:opacity-25" />
-                      <PolarAngleAxis dataKey="skill" tick={{ fill: 'var(--text-secondary, #78716C)', fontSize: 12, fontWeight: 600 }} />
+                      <PolarGrid stroke="#DDD5C8" className="dark:opacity-20" />
+                      <PolarAngleAxis dataKey="skill" tick={{ fill: '#78716C', fontSize: 12, fontWeight: 600 }} />
                       <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                       <RechartsTooltip 
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
                             const data = payload[0].payload;
                             return (
-                              <div className="bg-white dark:bg-stone-900 border border-warm-border dark:border-stone-750 p-3 rounded-xl shadow-xl text-xs space-y-1.5 min-w-[160px]">
-                                <p className="font-bold text-warm-text dark:text-white text-sm border-b border-warm-border/50 dark:border-stone-800 pb-1">{data.skill}</p>
-                                <div className="flex justify-between text-brand-purple dark:text-indigo-400">
+                              <div className="bg-stone-900/95 backdrop-blur-md border border-stone-700/60 p-3 rounded-xl shadow-xl text-xs space-y-1.5 min-w-[160px]">
+                                <p className="font-bold text-white text-sm border-b border-stone-800 pb-1">{data.skill}</p>
+                                <div className="flex justify-between text-indigo-400">
                                   <span>Current Level:</span>
                                   <span className="font-black">{data.currentPct}%</span>
                                 </div>
-                                <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                                <div className="flex justify-between text-emerald-400">
                                   <span>Required Level:</span>
                                   <span className="font-black">{data.requiredPct}%</span>
                                 </div>
-                                <div className="flex justify-between font-bold text-amber-600 dark:text-amber-400 pt-1 border-t border-warm-border/50 dark:border-stone-800">
+                                <div className="flex justify-between font-bold text-amber-400 pt-1 border-t border-stone-800">
                                   <span>Need to Learn:</span>
                                   <span>{data.gapPct > 0 ? `+${data.gapPct}%` : 'Goal Met'}</span>
                                 </div>
@@ -652,8 +652,8 @@ export const SkillsPage: React.FC = () => {
                           return null;
                         }}
                       />
-                      <Radar name="Current Proficiency (%)" dataKey="currentPct" stroke="var(--accent-primary, #6366F1)" fill="var(--accent-primary, #6366F1)" fillOpacity={0.4} />
-                      <Radar name="Required Target (%)" dataKey="requiredPct" stroke="var(--status-success, #10B981)" fill="var(--status-success, #10B981)" fillOpacity={0.2} />
+                      <Radar name="Current Proficiency (%)" dataKey="currentPct" stroke="#4F378B" fill="#4F378B" fillOpacity={0.5} />
+                      <Radar name="Required Target (%)" dataKey="requiredPct" stroke="#16A34A" fill="#16A34A" fillOpacity={0.25} />
                       <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontWeight: 600 }} />
                     </RadarChart>
                   </ResponsiveContainer>

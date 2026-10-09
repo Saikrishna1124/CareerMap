@@ -14,22 +14,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/128/1534/1534999.png" />
-  <!-- Instant Theme Initializer (Prevents Theme Flash / FOUC) -->
-  <script>
-    (function () {
-      try {
-        var theme = localStorage.getItem('theme');
-        var themeId = localStorage.getItem('careermap-theme');
-        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        var isDark = theme === 'dark' || (!theme && (themeId ? themeId.indexOf('dark') !== -1 || themeId === 'obsidian-warm' : prefersDark));
-        if (isDark) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      } catch (e) {}
-    })();
-  </script>
   <title>CareerMap</title>
 </head>
 
