@@ -20,6 +20,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { StarField } from '../components/StarField';
 import { useTheme, THEMES } from '../context/ThemeContext';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -115,23 +116,8 @@ export const LandingPage: React.FC = () => {
 
         {/* Right Action buttons & Theme Switcher */}
         <div className="flex items-center gap-3">
-          {/* Theme Palette Switcher */}
-          <div className="hidden sm:flex items-center gap-1.5 p-1.5 rounded-full bg-stone-100 dark:bg-stone-900 border border-warm-border/60 dark:border-stone-800 shadow-inner mr-1">
-            {THEMES.map(t => (
-              <button
-                key={t.id}
-                onClick={() => selectDarkTheme(t.id)}
-                className={`w-5 h-5 rounded-full transition-all duration-300 border-2 overflow-hidden ${activeDarkTheme === t.id
-                  ? 'border-brand-purple dark:border-white scale-110 shadow-md opacity-100 z-10'
-                  : 'border-transparent hover:scale-110 opacity-60 hover:opacity-100'
-                  }`}
-                title={t.name}
-                style={{
-                  backgroundColor: t.variables['--accent-primary']
-                }}
-              />
-            ))}
-          </div>
+          {/* Flagship Theme Switcher */}
+          <ThemeToggle variant="compact" />
 
           <Link
             to="/login"

@@ -1230,19 +1230,20 @@ export const ResultsPage: React.FC = () => {
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#1c1917',
-                        borderColor: '#292524',
+                        backgroundColor: 'var(--chart-tooltip-bg, #FFFFFF)',
+                        borderColor: 'var(--border-default, #CBD5E1)',
                         borderRadius: '16px',
-                        color: '#f5f5f4',
+                        color: 'var(--chart-tooltip-text, #0F172A)',
                         fontFamily: 'sans-serif',
                         fontSize: '11px',
-                        fontWeight: '800'
+                        fontWeight: '800',
+                        boxShadow: '0 8px 16px -4px rgb(0 0 0 / 0.15)'
                       }}
                     />
-                    <Line type="monotone" dataKey="Score" stroke="#4F378B" strokeWidth={3} activeDot={{ r: 6 }} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="Technical" stroke="#3B82F6" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                    <Line type="monotone" dataKey="Communication" stroke="#6366F1" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                    <Line type="monotone" dataKey="Confidence" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                    <Line type="monotone" dataKey="Score" stroke="var(--accent-primary, #6366F1)" strokeWidth={3} activeDot={{ r: 6 }} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="Technical" stroke="var(--status-info, #3B82F6)" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                    <Line type="monotone" dataKey="Communication" stroke="var(--accent-primary, #6366F1)" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                    <Line type="monotone" dataKey="Confidence" stroke="var(--accent-amber, #F59E0B)" strokeWidth={2} strokeDasharray="5 5" dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -1271,13 +1272,23 @@ export const ResultsPage: React.FC = () => {
                 >
                   <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                     <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                      <PolarGrid stroke="#e7e5e4" strokeDasharray="3 3" className="dark:stroke-stone-800" />
-                      <PolarAngleAxis dataKey="name" stroke="#78716c" fontSize={9} />
-                      <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#a8a29e" fontSize={8} />
-                      <Radar name="Chosen Session" dataKey="Current" stroke="#4F378B" fill="#4F378B" fillOpacity={0.25} />
-                      <Radar name="Historical Averages" dataKey="Average" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.1} />
+                      <PolarGrid stroke="var(--border-subtle, #e7e5e4)" strokeDasharray="3 3" className="opacity-60 dark:opacity-20" />
+                      <PolarAngleAxis dataKey="name" stroke="var(--text-secondary, #78716c)" fontSize={9} />
+                      <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="var(--text-muted, #a8a29e)" fontSize={8} />
+                      <Radar name="Chosen Session" dataKey="Current" stroke="var(--accent-primary, #6366F1)" fill="var(--accent-primary, #6366F1)" fillOpacity={0.25} />
+                      <Radar name="Historical Averages" dataKey="Average" stroke="var(--status-info, #3B82F6)" fill="var(--status-info, #3B82F6)" fillOpacity={0.12} />
                       <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
-                      <Tooltip />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'var(--chart-tooltip-bg, #FFFFFF)',
+                          borderColor: 'var(--border-default, #CBD5E1)',
+                          borderRadius: '16px',
+                          color: 'var(--chart-tooltip-text, #0F172A)',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          boxShadow: '0 8px 16px -4px rgb(0 0 0 / 0.15)'
+                        }}
+                      />
                     </RadarChart>
                   </ResponsiveContainer>
                 </motion.div>

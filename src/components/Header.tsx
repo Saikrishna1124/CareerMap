@@ -6,6 +6,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { loadUserGameState, getTodayDateStr } from '../utils/dailyGameUtils';
+import { ThemeToggle } from './ThemeToggle';
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -213,7 +214,9 @@ export const Header: React.FC = () => {
         <h2 className="text-xl font-bold text-warm-text dark:text-white tracking-tight">{getPageTitle()}</h2>
       </div>
 
-      <div className="flex items-center gap-4 sm:gap-6">
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Flagship Theme Switcher */}
+        <ThemeToggle variant="compact" />
 
         {/* Daily Streak Flame Button */}
         <button
